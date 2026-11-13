@@ -58,7 +58,11 @@ public final class UiUtils {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                layout.setError(null);
+                if (layout.getError() != null) {
+                    layout.setError(null);
+                    // eliberează și spațiul rezervat mesajului (setError îl reactivează la nevoie)
+                    layout.setErrorEnabled(false);
+                }
             }
 
             @Override
