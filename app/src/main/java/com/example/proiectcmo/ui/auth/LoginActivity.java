@@ -2,12 +2,23 @@ package com.example.proiectcmo.ui.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialCancellationException;
+import androidx.credentials.exceptions.GetCredentialException;
 import androidx.core.view.WindowCompat;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -17,20 +28,25 @@ import com.example.proiectcmo.utils.UiUtils;
 import com.example.proiectcmo.viewmodel.AuthFormState;
 import com.example.proiectcmo.viewmodel.AuthUiState;
 import com.example.proiectcmo.viewmodel.AuthViewModel;
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
 /**
- * Primul ecran al aplicației: autentificare cu email și parolă.
+ * Primul ecran al aplicației: autentificare cu email și parolă sau cu un cont Google.
  * Dacă utilizatorul este deja logat, trece direct la ecranul principal.
  */
 public class LoginActivity extends AppCompatActivity {
+
+    private static final String TAG = "LoginActivity";
 
     private AuthViewModel viewModel;
 
     private TextInputLayout emailLayout;
     private TextInputLayout passwordLayout;
     private Button loginButton;
+    private Button googleButton;
     private ProgressBar progressBar;
 
     @Override
@@ -57,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
         emailLayout = findViewById(R.id.emailLayout);
         passwordLayout = findViewById(R.id.passwordLayout);
         loginButton = findViewById(R.id.loginButton);
+        googleButton = findViewById(R.id.googleButton);
         progressBar = findViewById(R.id.progressBar);
     }
 
@@ -67,6 +84,8 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(v -> viewModel.login(
                 UiUtils.textOf(emailLayout), UiUtils.textOf(passwordLayout)));
 
+        googleButton.setOnClickListener(v -> startGoogleSignIn());
+
         TextView forgotPassword = findViewById(R.id.forgotPasswordText);
         forgotPassword.setOnClickListener(v ->
                 viewModel.resetPassword(UiUtils.textOf(emailLayout)));
@@ -75,6 +94,58 @@ public class LoginActivity extends AppCompatActivity {
         UiUtils.setLinkText(goToRegister, R.string.no_account, R.string.register_link);
         goToRegister.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
+    }
+
+    /**
+     * Deschide fereastra „Alege un cont” a Google prin Credential Manager.
+     * Rezultatul este un token de identitate, pe care ViewModel-ul îl trimite la Firebase.
+     */
+    private void startGoogleSignIn() {
+        // Id-ul clientului web este generat din google-services.json; lipsește dacă
+        // providerul Google nu a fost activat în consola Firebase.
+        int clientIdRes = getResources().getIdentifier(
+                "default_web_client_id", "string", getPackageName());
+        if (clientIdRes == 0) {
+            showMessage(R.string.error_google_not_configured);
+            return;
+        }
+
+        GetSignInWithGoogleOption option =
+                new GetSignInWithGoogleOption.Builder(getString(clientIdRes)).build();
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(option)
+                .build();
+
+        CredentialManager.create(this).getCredentialAsync(
+                this, request, null, ContextCompat.getMainExecutor(this),
+                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                    @Override
+                    public void onResult(GetCredentialResponse response) {
+                        handleGoogleCredential(response.getCredential());
+                    }
+
+                    @Override
+                    public void onError(@NonNull GetCredentialException e) {
+                        // Utilizatorul a închis fereastra → nu este o eroare.
+                        if (e instanceof GetCredentialCancellationException) {
+                            return;
+                        }
+                        Log.w(TAG, "Autentificarea cu Google a eșuat", e);
+                        viewModel.onGoogleSignInFailed(R.string.error_google_sign_in);
+                    }
+                });
+    }
+
+    /** Extrage token-ul Google din răspuns și îl trimite mai departe. */
+    private void handleGoogleCredential(Credential credential) {
+        if (credential instanceof CustomCredential
+                && GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                .equals(credential.getType())) {
+            String idToken = GoogleIdTokenCredential.createFrom(credential.getData()).getIdToken();
+            viewModel.loginWithGoogle(idToken);
+        } else {
+            viewModel.onGoogleSignInFailed(R.string.error_google_sign_in);
+        }
     }
 
     private void observeViewModel() {
@@ -91,6 +162,7 @@ public class LoginActivity extends AppCompatActivity {
         boolean loading = state.getStatus() == AuthUiState.Status.LOADING;
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         loginButton.setEnabled(!loading);
+        googleButton.setEnabled(!loading);
 
         switch (state.getStatus()) {
             case SUCCESS:

@@ -14,9 +14,11 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +74,23 @@ public class AuthRepository {
                 .addOnFailureListener(e -> callback.onError(mapError(e)));
     }
 
+    /**
+     * Autentificare cu un cont Google.
+     * Primește token-ul obținut de Credential Manager și îl schimbă pe o sesiune Firebase.
+     * La prima autentificare, Firebase creează automat contul.
+     */
+    public void loginWithGoogle(String idToken, Callback callback) {
+        auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null))
+                .addOnSuccessListener(result -> {
+                    FirebaseUser user = result.getUser();
+                    if (user != null) {
+                        saveGoogleProfile(user);
+                    }
+                    callback.onSuccess();
+                })
+                .addOnFailureListener(e -> callback.onError(mapError(e)));
+    }
+
     /** Trimite pe email un link pentru resetarea parolei. */
     public void sendPasswordReset(String email, Callback callback) {
         auth.sendPasswordResetEmail(email)
@@ -101,6 +120,19 @@ public class AuthRepository {
         data.put("createdAt", FieldValue.serverTimestamp());
         firestore.collection(USERS_COLLECTION).document(user.getUid())
                 .set(data)
+                .addOnFailureListener(e -> Log.w(TAG, "Nu s-a putut salva profilul", e));
+    }
+
+    /**
+     * Salvează în Firestore numele și emailul venite din contul Google.
+     * merge() păstrează câmpurile existente (ex. createdAt) la autentificările următoare.
+     */
+    private void saveGoogleProfile(@NonNull FirebaseUser user) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", user.getDisplayName());
+        data.put("email", user.getEmail());
+        firestore.collection(USERS_COLLECTION).document(user.getUid())
+                .set(data, SetOptions.merge())
                 .addOnFailureListener(e -> Log.w(TAG, "Nu s-a putut salva profilul", e));
     }
 

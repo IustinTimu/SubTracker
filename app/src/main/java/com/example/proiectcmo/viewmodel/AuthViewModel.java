@@ -58,6 +58,17 @@ public class AuthViewModel extends ViewModel {
         repository.login(email, password, callback(AuthUiState.success()));
     }
 
+    /** Pornește autentificarea Firebase cu token-ul primit de la Google. */
+    public void loginWithGoogle(String idToken) {
+        uiState.setValue(AuthUiState.loading());
+        repository.loginWithGoogle(idToken, callback(AuthUiState.success()));
+    }
+
+    /** Fereastra Google s-a închis cu o eroare (nu și când utilizatorul a renunțat). */
+    public void onGoogleSignInFailed(int messageRes) {
+        uiState.setValue(AuthUiState.error(messageRes));
+    }
+
     /** Validează câmpurile și, dacă sunt corecte, creează contul. */
     public void register(String name, String email, String password, String confirmPassword) {
         name = name.trim();
