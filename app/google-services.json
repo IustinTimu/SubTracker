@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "40357421059",
+    "project_id": "subtraker-61765",
+    "storage_bucket": "subtraker-61765.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:40357421059:android:c9b106a664c47468926e36",
+        "android_client_info": {
+          "package_name": "com.example.proiectcmo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHdpJ5pDcKoEl8B7KgIeET3iAbun45cJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

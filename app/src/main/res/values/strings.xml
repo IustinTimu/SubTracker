@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">SubTracker</string>
+
+    <!-- Autentificare -->
+    <string name="login_subtitle">Ține evidența abonamentelor tale lunare</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Parolă</string>
+    <string name="forgot_password">Ai uitat parola?</string>
+    <string name="action_login">Autentificare</string>
+    <string name="no_account_register">Nu ai cont? Înregistrează-te</string>
+    <string name="reset_email_sent">Ți-am trimis pe email un link pentru resetarea parolei.</string>
+
+    <!-- Înregistrare -->
+    <string name="register_title">Creează cont</string>
+    <string name="register_subtitle">Completează datele de mai jos pentru a începe</string>
+    <string name="hint_name">Nume și prenume</string>
+    <string name="hint_confirm_password">Confirmă parola</string>
+    <string name="helper_password">Minimum 6 caractere</string>
+    <string name="action_register">Creează cont</string>
+    <string name="have_account_login">Ai deja cont? Autentifică-te</string>
+
+    <!-- Erori de validare și Firebase -->
+    <string name="error_name_required">Introdu numele</string>
+    <string name="error_email_required">Introdu adresa de email</string>
+    <string name="error_email_invalid">Adresa de email nu este validă</string>
+    <string name="error_password_required">Introdu parola</string>
+    <string name="error_password_short">Parola trebuie să aibă cel puțin 6 caractere</string>
+    <string name="error_passwords_mismatch">Parolele nu coincid</string>
+    <string name="error_invalid_credentials">Email sau parolă greșită</string>
+    <string name="error_email_in_use">Există deja un cont cu acest email</string>
+    <string name="error_network">Nu există conexiune la internet</string>
+    <string name="error_too_many_requests">Prea multe încercări. Încearcă din nou mai târziu.</string>
+    <string name="error_generic">A apărut o eroare. Încearcă din nou.</string>
+
+    <!-- Ecranul principal -->
+    <string name="welcome_user">Bun venit, %1$s!</string>
+    <string name="empty_subscriptions">Nu ai încă niciun abonament adăugat.</string>
+    <string name="action_logout">Deconectare</string>
+    <string name="action_cancel">Anulează</string>
+    <string name="logout_title">Deconectare</string>
+    <string name="logout_message">Sigur vrei să te deconectezi?</string>
+</resources>
