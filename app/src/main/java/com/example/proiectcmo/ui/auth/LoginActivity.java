@@ -72,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
                 viewModel.resetPassword(UiUtils.textOf(emailLayout)));
 
         TextView goToRegister = findViewById(R.id.goToRegisterText);
+        UiUtils.setLinkText(goToRegister, R.string.no_account, R.string.register_link);
         goToRegister.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
     }

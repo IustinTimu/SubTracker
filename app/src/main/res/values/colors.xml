@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Paleta „Sage & Sand” din designul Figma (tema luminoasă). -->
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Culori principale -->
+    <color name="st_primary">#4F7C82</color>
+    <color name="st_on_primary">#FFFFFF</color>
+    <color name="st_primary_container">#E3EEEC</color>
+    <color name="st_on_primary_container">#2F5559</color>
+    <color name="st_secondary">#A8C5BE</color>
+    <color name="st_on_secondary">#1F3330</color>
+
+    <!-- Fundaluri și contururi -->
+    <color name="st_background">#F7F5F2</color>
+    <color name="st_surface">#FFFFFF</color>
+    <color name="st_border">#E4E1DC</color>
+
+    <!-- Accent (plăți apropiate) și eroare -->
+    <color name="st_accent">#E8A87C</color>
+    <color name="st_accent_container">#FBEDE3</color>
+    <color name="st_on_accent_container">#9A5B30</color>
+    <color name="st_error">#C96A6A</color>
+
+    <!-- Text -->
+    <color name="st_text_primary">#2E3A3F</color>
+    <color name="st_text_secondary">#7A8288</color>
+
+    <!-- Culorile categoriilor (avatar, grafic donut) -->
+    <color name="cat_streaming">#D99A9A</color>
+    <color name="cat_music">#8DB8A8</color>
+    <color name="cat_software">#8FA7C4</color>
+    <color name="cat_sport">#E8A87C</color>
+    <color name="cat_cloud">#B3A6CF</color>
+    <color name="cat_other">#A9B0B4</color>
 </resources>

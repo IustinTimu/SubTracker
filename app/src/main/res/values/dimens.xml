@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dimensiuni comune din design (colțuri, înălțimi, margini). -->
+<resources>
+    <dimen name="screen_padding">24dp</dimen>
+    <dimen name="field_corner">12dp</dimen>
+    <dimen name="field_height">52dp</dimen>
+    <dimen name="button_corner">14dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+    <dimen name="card_corner">16dp</dimen>
+    <dimen name="chip_corner">20dp</dimen>
+    <dimen name="card_elevation">1dp</dimen>
+    <dimen name="avatar_size">44dp</dimen>
+</resources>

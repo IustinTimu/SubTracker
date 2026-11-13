@@ -7,7 +7,14 @@
     <string name="hint_password">Parolă</string>
     <string name="forgot_password">Ai uitat parola?</string>
     <string name="action_login">Autentificare</string>
-    <string name="no_account_register">Nu ai cont? Înregistrează-te</string>
+    <string name="no_account">Nu ai cont?</string>
+    <string name="register_link">Înregistrează-te</string>
+    <string name="or">sau</string>
+    <string name="action_continue_google">Continuă cu Google</string>
+    <string name="placeholder_email">nume@exemplu.ro</string>
+    <string name="placeholder_password">••••••••</string>
+    <string name="placeholder_name">ex. Ana Popescu</string>
+    <string name="action_back">Înapoi</string>
     <string name="reset_email_sent">Ți-am trimis pe email un link pentru resetarea parolei.</string>
 
     <!-- Înregistrare -->
@@ -17,7 +24,8 @@
     <string name="hint_confirm_password">Confirmă parola</string>
     <string name="helper_password">Minimum 6 caractere</string>
     <string name="action_register">Creează cont</string>
-    <string name="have_account_login">Ai deja cont? Autentifică-te</string>
+    <string name="have_account">Ai deja cont?</string>
+    <string name="login_link">Autentifică-te</string>
 
     <!-- Erori de validare și Firebase -->
     <string name="error_name_required">Introdu numele</string>

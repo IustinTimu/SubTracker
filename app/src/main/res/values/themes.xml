@@ -1,9 +1,51 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!--
+        Tema aplicației (Material 3). Culorile vin din colors.xml; în dark mode Android
+        alege automat valorile din values-night/colors.xml.
+    -->
     <style name="Base.Theme.ProiectCMo" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/st_primary</item>
+        <item name="colorOnPrimary">@color/st_on_primary</item>
+        <item name="colorPrimaryContainer">@color/st_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/st_on_primary_container</item>
+        <item name="colorSecondary">@color/st_secondary</item>
+        <item name="colorOnSecondary">@color/st_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/st_primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/st_on_primary_container</item>
+        <item name="colorTertiary">@color/st_accent</item>
+        <item name="colorTertiaryContainer">@color/st_accent_container</item>
+        <item name="colorOnTertiaryContainer">@color/st_on_accent_container</item>
+        <item name="colorError">@color/st_error</item>
+        <item name="android:colorBackground">@color/st_background</item>
+        <item name="colorSurface">@color/st_surface</item>
+        <item name="colorOnSurface">@color/st_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/st_text_secondary</item>
+        <item name="colorOutline">@color/st_border</item>
+        <item name="colorSurfaceVariant">@color/st_background</item>
+        <item name="android:textColorPrimary">@color/st_text_primary</item>
+        <item name="android:textColorSecondary">@color/st_text_secondary</item>
+        <item name="android:windowBackground">@color/st_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">@bool/light_system_bars</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/light_system_bars</item>
+
+        <!-- Stilurile implicite ale componentelor -->
+        <item name="textInputStyle">@style/Widget.SubTracker.TextField</item>
+        <item name="materialButtonStyle">@style/Widget.SubTracker.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.SubTracker.Card</item>
+        <item name="toolbarStyle">@style/Widget.SubTracker.Toolbar</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.SubTracker.Dialog</item>
+        <item name="materialCalendarTheme">@style/ThemeOverlay.SubTracker.DatePicker</item>
     </style>
 
     <style name="Theme.ProiectCMo" parent="Base.Theme.ProiectCMo" />
+
+    <style name="ThemeOverlay.SubTracker.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.SubTracker.Card</item>
+        <item name="colorSurface">@color/st_surface</item>
+    </style>
+
+    <style name="ThemeOverlay.SubTracker.DatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="colorSurface">@color/st_surface</item>
+    </style>
 </resources>

@@ -71,7 +71,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Utilizatorul are deja cont → revine la ecranul de login.
         TextView goToLogin = findViewById(R.id.goToLoginText);
+        UiUtils.setLinkText(goToLogin, R.string.have_account, R.string.login_link);
         goToLogin.setOnClickListener(v -> finish());
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
     }
 
     private void observeViewModel() {

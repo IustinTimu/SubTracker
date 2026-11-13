@@ -1,13 +1,24 @@
 package com.example.proiectcmo.utils;
 
+import android.content.Context;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.graphics.Typeface;
 import android.view.View;
+import android.widget.TextView;
+
+import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.proiectcmo.R;
 import com.google.android.material.textfield.TextInputLayout;
 
 /**
@@ -57,5 +68,27 @@ public final class UiUtils {
     /** @return textul introdus în câmp, sau "" dacă acesta nu are EditText. */
     public static String textOf(TextInputLayout layout) {
         return layout.getEditText() == null ? "" : layout.getEditText().getText().toString();
+    }
+
+    /**
+     * Afișează un text de forma „Nu ai cont? Înregistrează-te”, unde a doua parte
+     * apare îngroșată și în culoarea principală, ca un link.
+     */
+    public static void setLinkText(TextView view, @StringRes int prefixRes, @StringRes int linkRes) {
+        Context context = view.getContext();
+        SpannableStringBuilder text = new SpannableStringBuilder(context.getString(prefixRes));
+        text.append(' ');
+        int start = text.length();
+        text.append(context.getString(linkRes));
+        text.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.st_primary)),
+                start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new StyleSpan(Typeface.BOLD), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        view.setText(text);
+    }
+
+    /** Convertește dp în pixeli, pentru dimensiuni setate din cod. */
+    public static int dp(Context context, float dp) {
+        return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 }
