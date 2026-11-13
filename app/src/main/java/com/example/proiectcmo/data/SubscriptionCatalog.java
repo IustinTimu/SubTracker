@@ -1,0 +1,118 @@
+package com.example.proiectcmo.data;
+
+import android.content.Context;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.example.proiectcmo.model.CatalogItem;
+import com.example.proiectcmo.model.Category;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Catalogul de abonamente populare, citit o singură dată din {@code assets/catalog.json}
+ * și păstrat în memorie (Singleton). Folosit de ecranul „Adaugă abonament” și de importul din Gmail.
+ */
+public final class SubscriptionCatalog {
+
+    private static final String TAG = "SubscriptionCatalog";
+    private static final String FILE_NAME = "catalog.json";
+
+    private static SubscriptionCatalog instance;
+
+    private final List<CatalogItem> items;
+
+    private SubscriptionCatalog(List<CatalogItem> items) {
+        this.items = Collections.unmodifiableList(items);
+    }
+
+    /** Întoarce catalogul, încărcându-l la primul apel. */
+    public static synchronized SubscriptionCatalog getInstance(@NonNull Context context) {
+        if (instance == null) {
+            instance = new SubscriptionCatalog(load(context.getApplicationContext()));
+        }
+        return instance;
+    }
+
+    public List<CatalogItem> getItems() {
+        return items;
+    }
+
+    /** Caută un serviciu după nume (fără să țină cont de litere mari/mici). */
+    @Nullable
+    public CatalogItem findByName(String name) {
+        for (CatalogItem item : items) {
+            if (item.getName().equalsIgnoreCase(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /** Caută serviciul care trimite emailuri de la adresa dată (ex. info@mailer.netflix.com). */
+    @Nullable
+    public CatalogItem findBySender(String senderEmail) {
+        for (CatalogItem item : items) {
+            if (item.matchesSender(senderEmail)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /** @return toate domeniile expeditorilor, fără duplicate (pentru interogarea Gmail). */
+    public List<String> getAllEmailDomains() {
+        List<String> domains = new ArrayList<>();
+        for (CatalogItem item : items) {
+            for (String domain : item.getEmailDomains()) {
+                if (!domains.contains(domain)) {
+                    domains.add(domain);
+                }
+            }
+        }
+        return domains;
+    }
+
+    private static List<CatalogItem> load(Context context) {
+        List<CatalogItem> result = new ArrayList<>();
+        try (InputStream input = context.getAssets().open(FILE_NAME)) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[4096];
+            int read;
+            while ((read = input.read(chunk)) != -1) {
+                buffer.write(chunk, 0, read);
+            }
+            JSONArray array = new JSONArray(buffer.toString(StandardCharsets.UTF_8.name()));
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject json = array.getJSONObject(i);
+                List<String> domains = new ArrayList<>();
+                JSONArray domainsJson = json.getJSONArray("domains");
+                for (int j = 0; j < domainsJson.length(); j++) {
+                    domains.add(domainsJson.getString(j));
+                }
+                result.add(new CatalogItem(
+                        json.getString("name"),
+                        json.getDouble("price"),
+                        json.getString("currency"),
+                        json.getString("cycle"),
+                        Category.fromName(json.getString("category")),
+                        domains));
+            }
+        } catch (IOException | JSONException e) {
+            Log.e(TAG, "Nu s-a putut citi catalogul", e);
+        }
+        return result;
+    }
+}

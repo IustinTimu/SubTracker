@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Antet comun pentru ecranele secundare: buton „înapoi” în cerc + titlu. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/screen_padding"
+    android:paddingVertical="12dp">
+
+    <ImageButton
+        android:id="@+id/backButton"
+        style="@style/Widget.SubTracker.IconButton"
+        android:contentDescription="@string/action_back"
+        android:src="@drawable/ic_arrow_back" />
+
+    <TextView
+        android:id="@+id/screenTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.SubTracker.Title"
+        android:textSize="20sp"
+        tools:text="Abonament nou" />
+</LinearLayout>

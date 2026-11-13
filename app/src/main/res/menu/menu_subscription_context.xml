@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Meniul contextual afișat la apăsarea lungă pe un abonament (ecranul 04). -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_edit"
+        android:icon="@drawable/ic_edit"
+        android:title="@string/action_edit" />
+    <item
+        android:id="@+id/action_mark_paid"
+        android:icon="@drawable/ic_check"
+        android:title="@string/action_mark_paid" />
+    <item
+        android:id="@+id/action_delete"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/action_delete" />
+</menu>

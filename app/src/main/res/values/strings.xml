@@ -40,9 +40,138 @@
     <string name="error_too_many_requests">Prea multe încercări. Încearcă din nou mai târziu.</string>
     <string name="error_generic">A apărut o eroare. Încearcă din nou.</string>
 
-    <!-- Ecranul principal -->
-    <string name="welcome_user">Bun venit, %1$s!</string>
-    <string name="empty_subscriptions">Nu ai încă niciun abonament adăugat.</string>
+    <string name="error_save">Nu s-a putut salva. Verifică conexiunea și încearcă din nou.</string>
+    <string name="error_google_sign_in">Autentificarea cu Google a eșuat.</string>
+    <string name="error_google_not_configured">Login-ul cu Google nu e configurat încă în Firebase (lipsește clientul OAuth Web din google-services.json).</string>
+
+    <!-- Ecranul principal (03) -->
+    <string name="greeting_user">Bună, %1$s 👋</string>
+    <string name="home_title">Abonamentele mele</string>
+    <string name="total_monthly">Total lunar</string>
+    <string name="currency_lei">lei</string>
+    <plurals name="active_summary">
+        <item quantity="one">%1$d abonament activ · %2$s lei / an</item>
+        <item quantity="few">%1$d abonamente active · %2$s lei / an</item>
+        <item quantity="other">%1$d de abonamente active · %2$s lei / an</item>
+    </plurals>
+    <string name="next_payment_pill">Următoarea plată: %1$s · %2$s</string>
+    <string name="no_next_payment">Nicio plată programată</string>
+    <string name="filter_all">Toate</string>
+    <string name="filter_monthly">Lunare</string>
+    <string name="filter_yearly">Anuale</string>
+    <string name="upcoming_payments">Următoarele plăți</string>
+    <string name="action_sort">Sortează</string>
+    <string name="sort_by_date">După data plății</string>
+    <string name="sort_by_price">După preț</string>
+    <string name="sort_by_name">După nume</string>
+    <string name="item_subtitle">%1$s · %2$s</string>
+    <string name="cycle_monthly">lunar</string>
+    <string name="cycle_yearly">anual</string>
+    <string name="empty_subscriptions">Nu ai încă niciun abonament</string>
+    <string name="empty_subscriptions_hint">Apasă pe + ca să adaugi primul abonament sau importă-le din Gmail.</string>
+    <string name="empty_filter">Niciun abonament pentru acest filtru</string>
+    <string name="action_add_subscription">Adaugă abonament</string>
+    <string name="action_statistics">Statistici</string>
+    <string name="action_import_gmail">Import din Gmail</string>
+    <string name="due_today">azi</string>
+    <string name="due_tomorrow">mâine</string>
+    <plurals name="due_in_days">
+        <item quantity="one">în %d zi</item>
+        <item quantity="few">în %d zile</item>
+        <item quantity="other">în %d de zile</item>
+    </plurals>
+    <plurals name="overdue_days">
+        <item quantity="one">acum %d zi</item>
+        <item quantity="few">acum %d zile</item>
+        <item quantity="other">acum %d de zile</item>
+    </plurals>
+
+    <!-- Meniul contextual (04) -->
+    <string name="action_edit">Editează</string>
+    <string name="action_mark_paid">Marchează ca plătit</string>
+    <string name="action_delete">Șterge</string>
+    <string name="delete_title">Ștergi abonamentul?</string>
+    <string name="delete_message">„%1$s” va fi șters definitiv din lista ta.</string>
+    <string name="subscription_deleted">Abonamentul a fost șters</string>
+    <string name="action_undo">Anulează</string>
+    <string name="marked_paid">Plata a fost înregistrată. Următoarea scadență a fost mutată.</string>
+
+    <!-- Adaugă / editează (05) -->
+    <string name="add_title">Abonament nou</string>
+    <string name="edit_title">Editează abonamentul</string>
+    <string name="label_name">Nume</string>
+    <string name="placeholder_subscription_name">ex. Netflix</string>
+    <string name="label_price">Preț</string>
+    <string name="placeholder_price">0,00</string>
+    <string name="label_currency">Monedă</string>
+    <string name="label_cycle">Frecvență</string>
+    <string name="cycle_monthly_label">Lunar</string>
+    <string name="cycle_yearly_label">Anual</string>
+    <string name="label_next_payment">Data următoarei plăți</string>
+    <string name="placeholder_date">Alege data</string>
+    <string name="label_category">Categorie</string>
+    <string name="notification_card_title">Notificare de plată</string>
+    <string name="notification_card_subtitle">Te anunțăm cu o zi înainte de scadență</string>
+    <string name="action_save_subscription">Salvează abonamentul</string>
+    <string name="error_subscription_name">Introdu numele abonamentului</string>
+    <string name="error_price">Introdu un preț mai mare decât 0</string>
+    <string name="error_date">Alege data următoarei plăți</string>
+    <string name="subscription_saved">Abonamentul a fost salvat</string>
+    <string name="date_picker_title">Data următoarei plăți</string>
+    <string name="notifications_denied">Fără permisiune, nu îți putem trimite notificări de plată.</string>
+
+    <!-- Categorii -->
+    <string name="category_streaming">Streaming</string>
+    <string name="category_music">Muzică</string>
+    <string name="category_software">Software</string>
+    <string name="category_sport">Sport</string>
+    <string name="category_cloud">Cloud</string>
+    <string name="category_other">Altele</string>
+
+    <!-- Catalog -->
+    <string name="catalog_title">Adaugă abonament</string>
+    <string name="catalog_subtitle">Alege un serviciu popular sau creează unul personalizat</string>
+    <string name="catalog_search_hint">Caută un serviciu</string>
+    <string name="catalog_custom">Personalizat</string>
+    <string name="catalog_custom_subtitle">Completezi tu detaliile</string>
+    <string name="catalog_price_monthly">%1$s / lună</string>
+    <string name="catalog_price_yearly">%1$s / an</string>
+
+    <!-- Statistici (06) -->
+    <string name="statistics_title">Statistici</string>
+    <string name="per_month">Pe lună</string>
+    <string name="per_year">Pe an</string>
+    <string name="by_category">Pe categorii</string>
+    <string name="donut_center_label">lunar</string>
+    <string name="legend_percent">%1$d%%</string>
+    <string name="statistics_empty">Adaugă abonamente ca să vezi statisticile.</string>
+    <string name="most_expensive">Cel mai scump abonament</string>
+    <string name="most_expensive_value">%1$s · %2$s / lună</string>
+    <string name="amount_lei">%1$s lei</string>
+
+    <!-- Import Gmail -->
+    <string name="gmail_title">Import din Gmail</string>
+    <string name="gmail_intro_title">Găsește abonamentele din email</string>
+    <string name="gmail_intro_text">Căutăm în Gmail chitanțele și facturile din ultimul an de la serviciile din catalog (Netflix, Spotify etc.) și îți propunem abonamentele găsite.</string>
+    <string name="gmail_privacy">Emailurile sunt citite doar pe telefon, cu permisiune de citire. Nu le salvăm și nu le trimitem nicăieri; în cont se salvează doar abonamentele pe care le bifezi.</string>
+    <string name="gmail_connect">Conectează Gmail</string>
+    <string name="gmail_searching">Caut în emailuri…</string>
+    <string name="gmail_found_title">Abonamente găsite</string>
+    <string name="gmail_found_subtitle">Bifează abonamentele pe care vrei să le adaugi. Sumele și datele sunt estimate din emailuri – le poți modifica după import.</string>
+    <string name="gmail_none_found">Nu am găsit emailuri de la serviciile din catalog în ultimul an.</string>
+    <string name="gmail_import_selected">Importă selecția (%1$d)</string>
+    <string name="gmail_imported">Abonamentele au fost importate</string>
+    <string name="gmail_error_auth">Nu s-a putut obține acces la Gmail.</string>
+    <string name="gmail_error_api">Eroare la citirea Gmail (%1$s). Verifică dacă Gmail API este activat în Google Cloud.</string>
+    <string name="gmail_item_meta">%1$s · ultimul email %2$s</string>
+    <string name="gmail_amount_unknown">sumă necunoscută, folosim prețul tipic</string>
+    <string name="gmail_try_again">Încearcă din nou</string>
+
+    <!-- Notificări -->
+    <string name="notification_channel_name">Plăți</string>
+    <string name="notification_channel_description">Amintiri cu o zi înainte de plata unui abonament</string>
+    <string name="notification_payment_title">Mâine se plătește %1$s</string>
+    <string name="notification_payment_text">Abonamentul %1$s (%2$s) se reînnoiește mâine.</string>
     <string name="action_logout">Deconectare</string>
     <string name="action_cancel">Anulează</string>
     <string name="logout_title">Deconectare</string>

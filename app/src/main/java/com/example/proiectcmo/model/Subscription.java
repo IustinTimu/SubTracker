@@ -1,7 +1,11 @@
 package com.example.proiectcmo.model;
 
+import androidx.annotation.NonNull;
+
 import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.Exclude;
+
+import java.util.Calendar;
 
 /**
  * Modelul unui abonament, salvat în Firestore la calea
@@ -25,7 +29,10 @@ public class Subscription {
     private String billingCycle;
     /** Data următoarei plăți, în milisecunde (System.currentTimeMillis()). */
     private long nextPaymentDate;
+    /** Numele unei constante din {@link Category} (ex. "STREAMING"). */
     private String category;
+    /** Dacă utilizatorul vrea notificare cu o zi înainte de plată. */
+    private boolean notifyBeforePayment = true;
 
     /** Constructor gol, necesar pentru Firestore. */
     public Subscription() {
@@ -42,12 +49,36 @@ public class Subscription {
     }
 
     /**
-     * Costul raportat la o lună: abonamentele anuale sunt împărțite la 12.
+     * Costul raportat la o lună, în moneda abonamentului: cele anuale sunt împărțite la 12.
      * Marcat cu @Exclude ca să nu fie salvat ca un câmp separat în Firestore.
      */
     @Exclude
     public double getMonthlyCost() {
-        return CYCLE_YEARLY.equals(billingCycle) ? price / 12.0 : price;
+        return isYearly() ? price / 12.0 : price;
+    }
+
+    @Exclude
+    public boolean isYearly() {
+        return CYCLE_YEARLY.equals(billingCycle);
+    }
+
+    /** Categoria ca enum (câmpul din Firestore e text). */
+    @Exclude
+    @NonNull
+    public Category getCategoryEnum() {
+        return Category.fromName(category);
+    }
+
+    /**
+     * Data plății de după cea curentă: +1 lună sau +1 an.
+     * Folosită de „Marchează ca plătit”.
+     */
+    @Exclude
+    public long computeFollowingPaymentDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(nextPaymentDate);
+        calendar.add(isYearly() ? Calendar.YEAR : Calendar.MONTH, 1);
+        return calendar.getTimeInMillis();
     }
 
     public String getId() { return id; }
@@ -70,4 +101,9 @@ public class Subscription {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public boolean isNotifyBeforePayment() { return notifyBeforePayment; }
+    public void setNotifyBeforePayment(boolean notifyBeforePayment) {
+        this.notifyBeforePayment = notifyBeforePayment;
+    }
 }

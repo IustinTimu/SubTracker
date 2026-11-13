@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Un rând din legenda graficului: punct colorat, categorie, sumă, procent. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp">
+
+    <View
+        android:id="@+id/legendDot"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:background="@drawable/bg_circle" />
+
+    <TextView
+        android:id="@+id/legendName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:textColor="@color/st_text_primary"
+        android:textSize="15sp"
+        tools:text="Streaming" />
+
+    <TextView
+        android:id="@+id/legendAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/st_text_primary"
+        android:textSize="15sp"
+        tools:text="114,97 lei" />
+
+    <TextView
+        android:id="@+id/legendPercent"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textColor="@color/st_text_secondary"
+        android:textSize="14sp"
+        tools:text="47%" />
+</LinearLayout>

@@ -1,6 +1,7 @@
 package com.example.proiectcmo.utils;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -11,6 +12,7 @@ import android.graphics.Typeface;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 
@@ -90,5 +92,19 @@ public final class UiUtils {
     /** Convertește dp în pixeli, pentru dimensiuni setate din cod. */
     public static int dp(Context context, float dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
+    }
+
+    /** Prima literă a numelui, pentru avatarul colorat (ex. „Netflix” → „N”). */
+    public static String initialOf(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "?";
+        }
+        return name.trim().substring(0, 1).toUpperCase();
+    }
+
+    /** Colorează fundalul unui view (avatar, badge) păstrând forma din drawable. */
+    public static void tintBackground(View view, @ColorRes int colorRes) {
+        ViewCompat.setBackgroundTintList(view,
+                ColorStateList.valueOf(ContextCompat.getColor(view.getContext(), colorRes)));
     }
 }

@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Meniul din bara de sus a ecranului principal. -->
+<!--
+    Meniul (options menu) din bara de sus a ecranului principal.
+    „Statistici” apare ca iconiță; celelalte opțiuni sunt în meniul cu trei puncte.
+-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_statistics"
+        android:icon="@drawable/ic_stats"
+        android:title="@string/action_statistics"
+        app:actionLayout="@layout/action_statistics"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_import_gmail"
+        android:icon="@drawable/ic_inbox"
+        android:title="@string/action_import_gmail"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_logout"
+        android:icon="@drawable/ic_logout"
         android:title="@string/action_logout"
         app:showAsAction="never" />
 </menu>

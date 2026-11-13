@@ -1,0 +1,22 @@
+[
+  {"name": "Netflix", "price": 49.99, "currency": "RON", "cycle": "MONTHLY", "category": "STREAMING", "domains": ["netflix.com"]},
+  {"name": "Spotify", "price": 25.99, "currency": "RON", "cycle": "MONTHLY", "category": "MUSIC", "domains": ["spotify.com"]},
+  {"name": "YouTube Premium", "price": 29.99, "currency": "RON", "cycle": "MONTHLY", "category": "STREAMING", "domains": ["youtube.com"]},
+  {"name": "HBO Max", "price": 34.99, "currency": "RON", "cycle": "MONTHLY", "category": "STREAMING", "domains": ["hbomax.com", "max.com"]},
+  {"name": "Disney+", "price": 39.99, "currency": "RON", "cycle": "MONTHLY", "category": "STREAMING", "domains": ["disneyplus.com"]},
+  {"name": "Prime Video", "price": 29.99, "currency": "RON", "cycle": "MONTHLY", "category": "STREAMING", "domains": ["primevideo.com", "amazon.com"]},
+  {"name": "Apple Music", "price": 24.99, "currency": "RON", "cycle": "MONTHLY", "category": "MUSIC", "domains": ["apple.com"]},
+  {"name": "Apple iCloud+", "price": 4.99, "currency": "RON", "cycle": "MONTHLY", "category": "CLOUD", "domains": ["icloud.com"]},
+  {"name": "Google One", "price": 9.99, "currency": "RON", "cycle": "MONTHLY", "category": "CLOUD", "domains": ["google.com"]},
+  {"name": "Dropbox", "price": 59.99, "currency": "RON", "cycle": "MONTHLY", "category": "CLOUD", "domains": ["dropbox.com", "dropboxmail.com"]},
+  {"name": "Microsoft 365", "price": 349.99, "currency": "RON", "cycle": "YEARLY", "category": "SOFTWARE", "domains": ["microsoft.com"]},
+  {"name": "Adobe Creative Cloud", "price": 299.99, "currency": "RON", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["adobe.com"]},
+  {"name": "ChatGPT Plus", "price": 20.00, "currency": "USD", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["openai.com"]},
+  {"name": "Claude Pro", "price": 20.00, "currency": "USD", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["anthropic.com"]},
+  {"name": "Canva Pro", "price": 59.99, "currency": "RON", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["canva.com"]},
+  {"name": "Duolingo Super", "price": 299.99, "currency": "RON", "cycle": "YEARLY", "category": "SOFTWARE", "domains": ["duolingo.com"]},
+  {"name": "Xbox Game Pass", "price": 54.99, "currency": "RON", "cycle": "MONTHLY", "category": "OTHER", "domains": ["xbox.com"]},
+  {"name": "PlayStation Plus", "price": 349.99, "currency": "RON", "cycle": "YEARLY", "category": "OTHER", "domains": ["playstation.com", "sony.com"]},
+  {"name": "World Class", "price": 199.00, "currency": "RON", "cycle": "MONTHLY", "category": "SPORT", "domains": ["worldclass.ro"]},
+  {"name": "Strava", "price": 299.99, "currency": "RON", "cycle": "YEARLY", "category": "SPORT", "domains": ["strava.com"]}
+]

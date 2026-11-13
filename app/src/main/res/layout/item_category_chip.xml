@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chip de categorie din formular; culoarea punctului se setează din cod. -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.SubTracker.Chip"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:chipIcon="@drawable/bg_circle"
+    app:chipIconSize="10dp"
+    app:chipIconVisible="true"
+    app:iconStartPadding="8dp" />
