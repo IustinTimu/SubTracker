@@ -14,21 +14,18 @@ public class DetectedSubscription {
     private final String currency;
     private final String billingCycle;
     private final Category category;
-    /** Data celui mai recent email de la serviciu, în milisecunde. */
+    /** Data celei mai recente facturi găsite, în milisecunde. */
     private final long lastEmailDate;
-    /** false dacă suma nu a fost găsită în email și s-a folosit prețul din catalog. */
-    private final boolean amountFromEmail;
     private boolean selected = true;
 
     public DetectedSubscription(String name, double price, String currency, String billingCycle,
-                                Category category, long lastEmailDate, boolean amountFromEmail) {
+                                Category category, long lastEmailDate) {
         this.name = name;
         this.price = price;
         this.currency = currency;
         this.billingCycle = billingCycle;
         this.category = category;
         this.lastEmailDate = lastEmailDate;
-        this.amountFromEmail = amountFromEmail;
     }
 
     /** Transformă propunerea într-un abonament care poate fi salvat în Firestore. */
@@ -63,8 +60,6 @@ public class DetectedSubscription {
     public Category getCategory() { return category; }
 
     public long getLastEmailDate() { return lastEmailDate; }
-
-    public boolean isAmountFromEmail() { return amountFromEmail; }
 
     public boolean isSelected() { return selected; }
 

@@ -158,13 +158,12 @@
     <string name="gmail_searching">Caut în emailuri…</string>
     <string name="gmail_found_title">Abonamente găsite</string>
     <string name="gmail_found_subtitle">Bifează abonamentele pe care vrei să le adaugi. Sumele și datele sunt estimate din emailuri – le poți modifica după import.</string>
-    <string name="gmail_none_found">Nu am găsit emailuri de la serviciile din catalog în ultimul an.</string>
+    <string name="gmail_none_found">Nu am găsit facturi de la serviciile din catalog în ultimul an.</string>
     <string name="gmail_import_selected">Importă selecția (%1$d)</string>
     <string name="gmail_imported">Abonamentele au fost importate</string>
     <string name="gmail_error_auth">Nu s-a putut obține acces la Gmail.</string>
     <string name="gmail_error_api">Eroare la citirea Gmail (%1$s). Verifică dacă Gmail API este activat în Google Cloud.</string>
     <string name="gmail_item_meta">%1$s · ultimul email %2$s</string>
-    <string name="gmail_amount_unknown">sumă necunoscută, folosim prețul tipic</string>
     <string name="gmail_try_again">Încearcă din nou</string>
 
     <!-- Notificări -->

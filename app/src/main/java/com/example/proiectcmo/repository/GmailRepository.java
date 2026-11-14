@@ -123,7 +123,7 @@ public class GmailRepository {
     /**
      * Caută cele mai recente chitanțe ale unui serviciu.
      *
-     * @return abonamentul propus sau null dacă serviciul nu are emailuri în ultimul an
+     * @return abonamentul propus sau null dacă serviciul nu are facturi în ultimul an
      */
     @Nullable
     private DetectedSubscription searchService(CatalogItem item, String token)
@@ -139,31 +139,22 @@ public class GmailRepository {
             return null;
         }
 
-        // 2. Emailurile sunt descărcate pe rând, până găsim o sumă
-        long lastEmailDate = 0;
-        AmountParser.Result amount = null;
-        boolean yearly = false;
+        // 2. Emailurile sunt descărcate pe rând, până la primul care conține o sumă de bani.
+        //    Un email fără sumă este reclamă sau notificare, nu factură, deci nu dovedește
+        //    că utilizatorul chiar plătește abonamentul.
         for (int i = 0; i < messages.length(); i++) {
             String id = messages.getJSONObject(i).getString("id");
             JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
-            if (i == 0) {
-                lastEmailDate = message.optLong("internalDate");
-            }
             String text = readText(message);
-            if (amount == null) {
-                amount = AmountParser.parse(text);
-            }
-            if (YEARLY_WORDS.matcher(text).find()) {
-                yearly = true;
+            AmountParser.Result amount = AmountParser.parse(text);
+            if (amount != null) {
+                String cycle = YEARLY_WORDS.matcher(text).find()
+                        ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
+                return new DetectedSubscription(item.getName(), amount.amount, amount.currency,
+                        cycle, item.getCategory(), message.optLong("internalDate"));
             }
         }
-
-        // 3. Fără sumă în emailuri → prețul tipic din catalog
-        double price = amount == null ? item.getPrice() : amount.amount;
-        String currency = amount == null ? item.getCurrency() : amount.currency;
-        String cycle = yearly ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
-        return new DetectedSubscription(item.getName(), price, currency, cycle,
-                item.getCategory(), lastEmailDate, amount != null);
+        return null;
     }
 
     /** Subiectul, rezumatul și corpul unui email, puse într-un singur text. */

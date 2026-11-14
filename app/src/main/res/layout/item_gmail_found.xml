@@ -65,15 +65,6 @@
                 android:textColor="@color/st_text_secondary"
                 android:textSize="13sp"
                 tools:text="Streaming · ultimul email 3 nov." />
-
-            <TextView
-                android:id="@+id/noteText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/gmail_amount_unknown"
-                android:textColor="@color/st_on_accent_container"
-                android:textSize="12sp" />
         </LinearLayout>
 
         <TextView

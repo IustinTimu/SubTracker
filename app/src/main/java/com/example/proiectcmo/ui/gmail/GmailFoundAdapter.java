@@ -60,7 +60,6 @@ public class GmailFoundAdapter extends RecyclerView.Adapter<GmailFoundAdapter.Vi
         holder.meta.setText(context.getString(R.string.gmail_item_meta,
                 context.getString(item.getCategory().getLabelRes()),
                 DateUtils.formatShort(item.getLastEmailDate())));
-        holder.note.setVisibility(item.isAmountFromEmail() ? View.GONE : View.VISIBLE);
         holder.price.setText(MoneyUtils.format(item.getPrice(), item.getCurrency()));
 
         holder.itemView.setOnClickListener(v -> {
@@ -80,7 +79,6 @@ public class GmailFoundAdapter extends RecyclerView.Adapter<GmailFoundAdapter.Vi
         final TextView avatar;
         final TextView name;
         final TextView meta;
-        final TextView note;
         final TextView price;
 
         ViewHolder(@NonNull View itemView) {
@@ -89,7 +87,6 @@ public class GmailFoundAdapter extends RecyclerView.Adapter<GmailFoundAdapter.Vi
             avatar = itemView.findViewById(R.id.avatarText);
             name = itemView.findViewById(R.id.nameText);
             meta = itemView.findViewById(R.id.metaText);
-            note = itemView.findViewById(R.id.noteText);
             price = itemView.findViewById(R.id.priceText);
         }
     }
