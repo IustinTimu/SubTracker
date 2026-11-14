@@ -247,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
                                     Snackbar.LENGTH_LONG)
                             .setAnchorView(R.id.addFab)
                             .setAction(R.string.action_undo, v -> homeViewModel.undoDelete(subscription))
+                            .setActionTextColor(ContextCompat.getColor(this, R.color.st_secondary))
                             .show();
                 })
                 .show();
