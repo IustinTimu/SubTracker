@@ -61,30 +61,6 @@ public final class SubscriptionCatalog {
         return null;
     }
 
-    /** Caută serviciul care trimite emailuri de la adresa dată (ex. info@mailer.netflix.com). */
-    @Nullable
-    public CatalogItem findBySender(String senderEmail) {
-        for (CatalogItem item : items) {
-            if (item.matchesSender(senderEmail)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    /** @return toate domeniile expeditorilor, fără duplicate (pentru interogarea Gmail). */
-    public List<String> getAllEmailDomains() {
-        List<String> domains = new ArrayList<>();
-        for (CatalogItem item : items) {
-            for (String domain : item.getEmailDomains()) {
-                if (!domains.contains(domain)) {
-                    domains.add(domain);
-                }
-            }
-        }
-        return domains;
-    }
-
     private static List<CatalogItem> load(Context context) {
         List<CatalogItem> result = new ArrayList<>();
         try (InputStream input = context.getAssets().open(FILE_NAME)) {
@@ -108,7 +84,8 @@ public final class SubscriptionCatalog {
                         json.getString("currency"),
                         json.getString("cycle"),
                         Category.fromName(json.getString("category")),
-                        domains));
+                        domains,
+                        json.optString("keyword")));
             }
         } catch (IOException | JSONException e) {
             Log.e(TAG, "Nu s-a putut citi catalogul", e);

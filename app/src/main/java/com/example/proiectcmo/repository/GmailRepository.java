@@ -6,6 +6,8 @@ import android.text.Html;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.example.proiectcmo.data.SubscriptionCatalog;
 import com.example.proiectcmo.model.CatalogItem;
 import com.example.proiectcmo.model.DetectedSubscription;
@@ -24,13 +26,11 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 /**
@@ -52,8 +52,8 @@ public class GmailRepository {
 
     private static final String TAG = "GmailRepository";
     private static final String BASE_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages";
-    /** Câte emailuri analizăm cel mult (fiecare înseamnă o cerere HTTP). */
-    private static final int MAX_MESSAGES = 40;
+    /** Câte emailuri recente citim pentru fiecare serviciu (fiecare înseamnă o cerere HTTP). */
+    private static final int MESSAGES_PER_SERVICE = 3;
     private static final int MAX_TEXT_LENGTH = 20000;
 
     /** Cuvinte care arată că emailul este o chitanță/factură, nu o reclamă. */
@@ -61,13 +61,14 @@ public class GmailRepository {
             "(factura OR factură OR chitanta OR chitanță OR plata OR plată OR abonament"
                     + " OR receipt OR invoice OR payment OR subscription OR renewal)";
 
-    private static final Pattern EMAIL_ADDRESS = Pattern.compile("[\\w.+-]+@[\\w.-]+");
     private static final Pattern YEARLY_WORDS = Pattern.compile(
             "\\b(anual|anuală|annual|yearly|per year|12 luni)\\b", Pattern.CASE_INSENSITIVE);
 
     private final SubscriptionCatalog catalog;
     /** Cererile de rețea nu au voie pe firul principal, așa că rulează pe un fir separat. */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    /** Fire pe care serviciile din catalog sunt căutate în paralel. */
+    private final ExecutorService searchPool = Executors.newFixedThreadPool(5);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public GmailRepository(SubscriptionCatalog catalog) {
@@ -92,66 +93,91 @@ public class GmailRepository {
         });
     }
 
-    private List<DetectedSubscription> search(String token) throws IOException, JSONException {
-        // 1. Lista id-urilor de emailuri care se potrivesc cu interogarea
-        String query = "from:(" + String.join(" OR ", catalog.getAllEmailDomains()) + ") "
-                + RECEIPT_WORDS + " newer_than:1y";
-        String listUrl = BASE_URL + "?maxResults=" + MAX_MESSAGES
-                + "&q=" + URLEncoder.encode(query, "UTF-8");
-        JSONArray messages = new JSONObject(get(listUrl, token)).optJSONArray("messages");
-
-        // 2. Fiecare email este descărcat și grupat după serviciu.
-        //    Gmail întoarce emailurile de la cel mai nou la cel mai vechi.
-        Map<String, Found> foundByService = new LinkedHashMap<>();
-        for (int i = 0; messages != null && i < messages.length(); i++) {
-            String id = messages.getJSONObject(i).getString("id");
-            JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
-            collect(message, foundByService);
+    private List<DetectedSubscription> search(String token)
+            throws IOException, JSONException {
+        // Fiecare serviciu este căutat separat, în paralel, ca să dureze mai puțin.
+        List<Future<DetectedSubscription>> tasks = new ArrayList<>();
+        for (CatalogItem item : catalog.getItems()) {
+            tasks.add(searchPool.submit(() -> searchService(item, token)));
         }
 
-        // 3. Câte un abonament propus pentru fiecare serviciu
         List<DetectedSubscription> result = new ArrayList<>();
-        for (Found found : foundByService.values()) {
-            result.add(found.toDetected());
+        for (Future<DetectedSubscription> task : tasks) {
+            try {
+                DetectedSubscription detected = task.get();
+                if (detected != null) {
+                    result.add(detected);
+                }
+            } catch (ExecutionException e) {
+                // eroarea reală (ex. HTTP 403) este cauza excepției
+                throw new IOException(String.valueOf(e.getCause() == null
+                        ? e.getMessage() : e.getCause().getMessage()));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException(e);
+            }
         }
         return result;
     }
 
-    /** Analizează un email și actualizează datele serviciului de la care a venit. */
-    private void collect(JSONObject message, Map<String, Found> foundByService) {
-        JSONObject payload = message.optJSONObject("payload");
-        if (payload == null) {
-            return;
-        }
-        CatalogItem item = catalog.findBySender(extractSender(header(payload, "From")));
-        if (item == null) {
-            return;
+    /**
+     * Caută cele mai recente chitanțe ale unui serviciu.
+     *
+     * @return abonamentul propus sau null dacă serviciul nu are emailuri în ultimul an
+     */
+    @Nullable
+    private DetectedSubscription searchService(CatalogItem item, String token)
+            throws IOException, JSONException {
+        // 1. Lista id-urilor de emailuri, de la cel mai nou la cel mai vechi
+        String query = "from:(" + String.join(" OR ", item.getEmailDomains()) + ") "
+                + (item.getKeyword().isEmpty() ? "" : "\"" + item.getKeyword() + "\" ")
+                + RECEIPT_WORDS + " newer_than:1y";
+        String listUrl = BASE_URL + "?maxResults=" + MESSAGES_PER_SERVICE
+                + "&q=" + URLEncoder.encode(query, "UTF-8");
+        JSONArray messages = new JSONObject(get(listUrl, token)).optJSONArray("messages");
+        if (messages == null || messages.length() == 0) {
+            return null;
         }
 
-        Found found = foundByService.get(item.getName());
-        if (found == null) {
-            // primul email văzut este și cel mai recent
-            found = new Found(item, message.optLong("internalDate"));
-            foundByService.put(item.getName(), found);
+        // 2. Emailurile sunt descărcate pe rând, până găsim o sumă
+        long lastEmailDate = 0;
+        AmountParser.Result amount = null;
+        boolean yearly = false;
+        for (int i = 0; i < messages.length(); i++) {
+            String id = messages.getJSONObject(i).getString("id");
+            JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
+            if (i == 0) {
+                lastEmailDate = message.optLong("internalDate");
+            }
+            String text = readText(message);
+            if (amount == null) {
+                amount = AmountParser.parse(text);
+            }
+            if (YEARLY_WORDS.matcher(text).find()) {
+                yearly = true;
+            }
         }
 
-        StringBuilder text = new StringBuilder();
-        text.append(header(payload, "Subject")).append(' ')
-                .append(message.optString("snippet")).append(' ');
-        appendBodyText(payload, text);
-
-        if (found.amount == null) {
-            found.amount = AmountParser.parse(text.toString());
-        }
-        if (YEARLY_WORDS.matcher(text).find()) {
-            found.yearly = true;
-        }
+        // 3. Fără sumă în emailuri → prețul tipic din catalog
+        double price = amount == null ? item.getPrice() : amount.amount;
+        String currency = amount == null ? item.getCurrency() : amount.currency;
+        String cycle = yearly ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
+        return new DetectedSubscription(item.getName(), price, currency, cycle,
+                item.getCategory(), lastEmailDate, amount != null);
     }
 
-    /** Extrage adresa din antetul From, ex. „Netflix <info@mailer.netflix.com>”. */
-    private static String extractSender(String from) {
-        Matcher matcher = EMAIL_ADDRESS.matcher(from);
-        return matcher.find() ? matcher.group().toLowerCase(Locale.ROOT) : "";
+    /** Subiectul, rezumatul și corpul unui email, puse într-un singur text. */
+    private static String readText(JSONObject message) {
+        StringBuilder text = new StringBuilder();
+        JSONObject payload = message.optJSONObject("payload");
+        if (payload != null) {
+            text.append(header(payload, "Subject")).append(' ');
+        }
+        text.append(message.optString("snippet")).append(' ');
+        if (payload != null) {
+            appendBodyText(payload, text);
+        }
+        return text.toString();
     }
 
     private static String header(JSONObject payload, String name) {
@@ -220,28 +246,6 @@ public class GmailRepository {
             }
         } finally {
             connection.disconnect();
-        }
-    }
-
-    /** Ce s-a aflat despre un serviciu din emailurile lui. */
-    private static final class Found {
-        final CatalogItem item;
-        final long lastEmailDate;
-        AmountParser.Result amount;
-        boolean yearly;
-
-        Found(CatalogItem item, long lastEmailDate) {
-            this.item = item;
-            this.lastEmailDate = lastEmailDate;
-        }
-
-        DetectedSubscription toDetected() {
-            // fără sumă în email → prețul tipic din catalog
-            double price = amount == null ? item.getPrice() : amount.amount;
-            String currency = amount == null ? item.getCurrency() : amount.currency;
-            String cycle = yearly ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
-            return new DetectedSubscription(item.getName(), price, currency, cycle,
-                    item.getCategory(), lastEmailDate, amount != null);
         }
     }
 }
