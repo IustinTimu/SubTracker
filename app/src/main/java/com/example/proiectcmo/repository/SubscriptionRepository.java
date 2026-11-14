@@ -13,6 +13,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,11 @@ public class SubscriptionRepository {
     private static final String USERS = "users";
     private static final String SUBSCRIPTIONS = "subscriptions";
     private static final String FIELD_NEXT_PAYMENT = "nextPaymentDate";
+
+    /** Rezultatul citirii listei de abonamente. */
+    public interface ListCallback {
+        void onLoaded(List<Subscription> subscriptions);
+    }
 
     /** Rezultatul încărcării unui singur abonament (pentru ecranul de editare). */
     public interface LoadCallback {
@@ -56,6 +62,17 @@ public class SubscriptionRepository {
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Nu s-a putut citi abonamentul", e);
                     callback.onLoaded(null);
+                });
+    }
+
+    /** Citește o singură dată toate abonamentele (fără actualizări automate). */
+    public void getAllOnce(ListCallback callback) {
+        collection().get()
+                .addOnSuccessListener(snapshot ->
+                        callback.onLoaded(snapshot.toObjects(Subscription.class)))
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Nu s-au putut citi abonamentele", e);
+                    callback.onLoaded(new ArrayList<>());
                 });
     }
 

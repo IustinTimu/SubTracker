@@ -2,6 +2,7 @@ package com.example.proiectcmo.utils;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
+import androidx.annotation.PluralsRes;
 import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 
@@ -22,6 +24,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.proiectcmo.R;
 import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.Locale;
 
 /**
  * Funcții ajutătoare pentru interfață, folosite de mai multe activități.
@@ -91,6 +95,19 @@ public final class UiUtils {
         text.setSpan(new StyleSpan(Typeface.BOLD), start, text.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(text);
+    }
+
+    /**
+     * Alege forma de plural după regulile limbii române („2 zile”, dar „20 de zile”),
+     * chiar dacă telefonul este setat pe altă limbă. Fără asta, pe un telefon în engleză
+     * Android ar aplica regulile englezei și ar afișa „6 de zile”.
+     */
+    public static String quantityString(Context context, @PluralsRes int pluralRes,
+                                        int count, Object... args) {
+        Configuration config = new Configuration(context.getResources().getConfiguration());
+        config.setLocale(new Locale("ro"));
+        return context.createConfigurationContext(config).getResources()
+                .getQuantityString(pluralRes, count, args);
     }
 
     /** Convertește dp în pixeli, pentru dimensiuni setate din cod. */

@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
 
     private void renderSummary(HomeSummary summary) {
         totalAmountText.setText(MoneyUtils.formatNumber(summary.getMonthlyTotal()));
-        activeSummaryText.setText(getResources().getQuantityString(R.plurals.active_summary,
+        activeSummaryText.setText(UiUtils.quantityString(this, R.plurals.active_summary,
                 summary.getCount(), summary.getCount(),
                 MoneyUtils.formatRounded(summary.getYearlyTotal())));
 

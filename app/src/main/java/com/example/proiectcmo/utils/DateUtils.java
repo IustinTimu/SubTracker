@@ -46,9 +46,9 @@ public final class DateUtils {
         } else if (days == 1) {
             return context.getString(R.string.due_tomorrow);
         } else if (days > 1) {
-            return context.getResources().getQuantityString(R.plurals.due_in_days, days, days);
+            return UiUtils.quantityString(context, R.plurals.due_in_days, days, days);
         }
-        return context.getResources().getQuantityString(R.plurals.overdue_days, -days, -days);
+        return UiUtils.quantityString(context, R.plurals.overdue_days, -days, -days);
     }
 
     /** Ex.: „12 dec. 2026”. */

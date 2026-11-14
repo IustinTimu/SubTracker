@@ -18,7 +18,10 @@ import com.example.proiectcmo.utils.Event;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Logica ecranului „Import din Gmail”: pornește căutarea, ține lista de abonamente
@@ -66,17 +69,43 @@ public class GmailImportViewModel extends AndroidViewModel {
             public void onResult(List<DetectedSubscription> subscriptions) {
                 if (subscriptions.isEmpty()) {
                     showMessage(getApplication().getString(R.string.gmail_none_found));
-                    return;
+                } else {
+                    removeExisting(subscriptions);
                 }
-                items.setValue(subscriptions);
-                refreshSelectedCount();
-                status.setValue(Status.RESULTS);
             }
 
             @Override
             public void onError(String detail) {
                 showMessage(getApplication().getString(R.string.gmail_error_api, detail));
             }
+        });
+    }
+
+    /**
+     * Scoate din propuneri abonamentele care sunt deja în lista utilizatorului
+     * (comparate după nume), ca un al doilea import să nu creeze dubluri.
+     */
+    private void removeExisting(List<DetectedSubscription> found) {
+        subscriptionRepository.getAllOnce(existing -> {
+            Set<String> existingNames = new HashSet<>();
+            for (Subscription subscription : existing) {
+                if (subscription.getName() != null) {
+                    existingNames.add(subscription.getName().toLowerCase(Locale.ROOT));
+                }
+            }
+            List<DetectedSubscription> fresh = new ArrayList<>();
+            for (DetectedSubscription item : found) {
+                if (!existingNames.contains(item.getName().toLowerCase(Locale.ROOT))) {
+                    fresh.add(item);
+                }
+            }
+            if (fresh.isEmpty()) {
+                showMessage(getApplication().getString(R.string.gmail_all_existing));
+                return;
+            }
+            items.setValue(fresh);
+            refreshSelectedCount();
+            status.setValue(Status.RESULTS);
         });
     }
 
