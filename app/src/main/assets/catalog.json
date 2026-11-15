@@ -12,7 +12,7 @@
   {"name": "Microsoft 365", "price": 349.99, "currency": "RON", "cycle": "YEARLY", "category": "SOFTWARE", "domains": ["microsoft.com"], "keyword": "Microsoft 365", "cancelUrl": "https://account.microsoft.com/services"},
   {"name": "Adobe Creative Cloud", "price": 299.99, "currency": "RON", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["adobe.com"], "cancelUrl": "https://account.adobe.com/plans"},
   {"name": "ChatGPT Plus", "price": 20.0, "currency": "USD", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["openai.com", "openai"], "cancelUrl": "https://chatgpt.com/#settings/Subscription"},
-  {"name": "Claude Pro", "price": 20.0, "currency": "USD", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["anthropic.com", "anthropic", "claude.ai", "claude.com"], "cancelUrl": "https://claude.ai/settings/billing"},
+  {"name": "Claude Pro", "price": 20.0, "currency": "USD", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["anthropic.com", "anthropic", "claude.ai", "claude.com", "apple.com"], "cancelUrl": "https://claude.ai/settings/billing", "keyword": "Claude"},
   {"name": "Canva Pro", "price": 59.99, "currency": "RON", "cycle": "MONTHLY", "category": "SOFTWARE", "domains": ["canva.com"]},
   {"name": "Duolingo Super", "price": 299.99, "currency": "RON", "cycle": "YEARLY", "category": "SOFTWARE", "domains": ["duolingo.com"], "cancelUrl": "https://www.duolingo.com/settings/super"},
   {"name": "Xbox Game Pass", "price": 54.99, "currency": "RON", "cycle": "MONTHLY", "category": "OTHER", "domains": ["xbox.com", "microsoft.com"], "keyword": "Game Pass", "cancelUrl": "https://account.microsoft.com/services"},

@@ -55,6 +55,35 @@ public final class AmountParser {
         return firstMatch(text);
     }
 
+    /** Câte caractere după numele produsului căutăm prețul lui. */
+    private static final int NEAR_WINDOW = 160;
+
+    /**
+     * Caută suma scrisă imediat după numele unui produs. O chitanță poate conține mai multe
+     * produse (ex. o chitanță Apple cu Apple Music și iCloud+), iar totalul de jos le adună;
+     * de aceea luăm prețul de lângă nume.
+     *
+     * @return suma de după prima apariție a numelui care are un preț aproape, sau null
+     */
+    @Nullable
+    public static Result parseNear(String text, String productName) {
+        if (text == null || productName == null || productName.isEmpty()) {
+            return null;
+        }
+        String lower = text.toLowerCase(Locale.ROOT);
+        String needle = productName.toLowerCase(Locale.ROOT);
+        int index = lower.indexOf(needle);
+        while (index >= 0) {
+            int start = index + needle.length();
+            Result near = firstMatch(text.substring(start, Math.min(text.length(), start + NEAR_WINDOW)));
+            if (near != null) {
+                return near;
+            }
+            index = lower.indexOf(needle, start);
+        }
+        return null;
+    }
+
     /** Aplică ambele tipare și întoarce potrivirea care apare prima în text. */
     @Nullable
     private static Result firstMatch(String text) {

@@ -27,6 +27,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,7 +54,7 @@ public class GmailRepository {
     private static final String TAG = "GmailRepository";
     private static final String BASE_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages";
     /** Câte emailuri recente citim pentru fiecare serviciu (fiecare înseamnă o cerere HTTP). */
-    private static final int MESSAGES_PER_SERVICE = 3;
+    private static final int MESSAGES_PER_SERVICE = 5;
     private static final int MAX_TEXT_LENGTH = 20000;
 
     /** Cuvinte care arată că emailul este o chitanță/factură, nu o reclamă. */
@@ -63,6 +64,9 @@ public class GmailRepository {
 
     private static final Pattern YEARLY_WORDS = Pattern.compile(
             "\\b(anual|anuală|annual|yearly|per year|12 luni)\\b", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern STYLE_BLOCK = Pattern.compile(
+            "<style[^>]*>.*?</style>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final SubscriptionCatalog catalog;
     /** Cererile de rețea nu au voie pe firul principal, așa că rulează pe un fir separat. */
@@ -146,7 +150,21 @@ public class GmailRepository {
             String id = messages.getJSONObject(i).getString("id");
             JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
             String text = readText(message);
-            AmountParser.Result amount = AmountParser.parse(text);
+            AmountParser.Result amount;
+            if (item.getKeyword().isEmpty()) {
+                // Expeditor dedicat (ex. netflix.com): orice sumă din email este a serviciului.
+                amount = AmountParser.parse(text);
+            } else {
+                // Expeditor comun (ex. apple.com trimite chitanțe pentru multe produse):
+                // emailul contează doar dacă numește produsul, iar prețul se ia de lângă nume.
+                if (!text.toLowerCase(Locale.ROOT).contains(item.getKeyword().toLowerCase(Locale.ROOT))) {
+                    continue;
+                }
+                amount = AmountParser.parseNear(text, item.getKeyword());
+                if (amount == null) {
+                    amount = AmountParser.parse(text); // ex. „ofertă acceptată”, cu prețul mai jos
+                }
+            }
             if (amount != null) {
                 String cycle = YEARLY_WORDS.matcher(text).find()
                         ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
@@ -200,6 +218,8 @@ public class GmailRepository {
                 String decoded = new String(
                         Base64.decode(data, Base64.URL_SAFE), StandardCharsets.UTF_8);
                 if (mimeType.equals("text/html")) {
+                    // Blocurile <style> nu sunt text vizibil; altfel CSS-ul ajunge în mijlocul textului.
+                    decoded = STYLE_BLOCK.matcher(decoded).replaceAll(" ");
                     decoded = Html.fromHtml(decoded, Html.FROM_HTML_MODE_COMPACT).toString();
                 }
                 out.append(decoded, 0, Math.min(decoded.length(), MAX_TEXT_LENGTH)).append(' ');
