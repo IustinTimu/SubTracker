@@ -14,6 +14,7 @@ import com.example.proiectcmo.model.Subscription;
 import com.example.proiectcmo.notifications.PaymentReminderScheduler;
 import com.example.proiectcmo.repository.OperationCallback;
 import com.example.proiectcmo.repository.SubscriptionRepository;
+import com.example.proiectcmo.repository.SubscriptionsLiveData;
 import com.example.proiectcmo.utils.Event;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class HomeViewModel extends AndroidViewModel {
     private final SubscriptionRepository repository = new SubscriptionRepository();
 
     /** Toate abonamentele, direct din Firestore. */
-    private final LiveData<List<Subscription>> all = repository.observeAll();
+    private final SubscriptionsLiveData all = repository.observeAll();
 
     private final MutableLiveData<BillingFilter> filter = new MutableLiveData<>(BillingFilter.ALL);
     private final MutableLiveData<SortOrder> sortOrder = new MutableLiveData<>(SortOrder.NEXT_PAYMENT);
@@ -62,6 +63,9 @@ public class HomeViewModel extends AndroidViewModel {
 
     /** Mesaje de afișat o singură dată (Snackbar). */
     public LiveData<Event<Integer>> getMessages() { return messages; }
+
+    /** Eroarea de încărcare a listei din Firestore. */
+    public LiveData<Event<Integer>> getLoadErrors() { return all.getErrors(); }
 
     public LiveData<BillingFilter> getFilter() { return filter; }
 

@@ -116,7 +116,6 @@
     <string name="error_subscription_name">Introdu numele abonamentului</string>
     <string name="error_price">Introdu un preț mai mare decât 0</string>
     <string name="error_date">Alege data următoarei plăți</string>
-    <string name="subscription_saved">Abonamentul a fost salvat</string>
     <string name="date_picker_title">Data următoarei plăți</string>
     <string name="notifications_denied">Fără permisiune, nu îți putem trimite notificări de plată.</string>
 
@@ -196,5 +195,6 @@
     <string name="cancel_confirm_message">Dacă ai anulat pe site, marchează-l ca anulat: nu mai intră în totaluri și nu mai primești alerte de plată.</string>
     <string name="marked_cancelled">Abonamentul a fost marcat ca anulat.</string>
     <string name="marked_active">Abonamentul este din nou activ.</string>
+    <string name="error_load">Abonamentele nu au putut fi încărcate. Verifică conexiunea la internet.</string>
     <string name="error_no_browser">Nu există un browser care să deschidă link-ul.</string>
 </resources>

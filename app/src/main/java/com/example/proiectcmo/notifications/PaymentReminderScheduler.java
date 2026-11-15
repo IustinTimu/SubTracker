@@ -40,7 +40,7 @@ public final class PaymentReminderScheduler {
             if (!subscription.isNotifyBeforePayment() || subscription.isCancelled()) {
                 continue; // fără alertă pentru abonamentele anulate
             }
-            long remindAt = reminderTime(subscription.getNextPaymentDate());
+            long remindAt = reminderTime(subscription.getUpcomingPaymentDate());
             if (remindAt <= now) {
                 continue; // ziua de dinainte a trecut deja
             }

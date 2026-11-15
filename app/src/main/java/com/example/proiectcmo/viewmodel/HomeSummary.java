@@ -34,7 +34,7 @@ public final class HomeSummary {
             }
             active++;
             monthly += MoneyUtils.toRon(s.getMonthlyCost(), s.getCurrency());
-            if (next == null || s.getNextPaymentDate() < next.getNextPaymentDate()) {
+            if (next == null || s.getUpcomingPaymentDate() < next.getUpcomingPaymentDate()) {
                 next = s;
             }
         }

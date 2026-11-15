@@ -173,6 +173,13 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
     private void observeViewModel() {
         homeViewModel.getVisibleSubscriptions().observe(this, this::renderList);
         homeViewModel.getSummary().observe(this, this::renderSummary);
+        homeViewModel.getLoadErrors().observe(this, event -> {
+            Integer messageRes = event.getIfNotHandled();
+            if (messageRes != null) {
+                progressBar.setVisibility(View.GONE);
+                showMessage(messageRes);
+            }
+        });
         homeViewModel.getMessages().observe(this, event -> {
             Integer message = event.getIfNotHandled();
             if (message != null) {
@@ -204,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         Subscription next = summary.getNextPayment();
         nextPaymentPill.setText(next == null ? getString(R.string.no_next_payment)
                 : getString(R.string.next_payment_pill, next.getName(),
-                DateUtils.relativeDays(this, next.getNextPaymentDate())));
+                DateUtils.relativeDays(this, next.getUpcomingPaymentDate())));
     }
 
     // ---------- Evenimente din listă ----------
@@ -251,17 +258,9 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
      * pe utilizator dacă a anulat, ca să marcheze abonamentul (vezi {@link #onResume()}).
      */
     private void openCancelPage(Subscription subscription) {
-        String url = CancelLinks.resolve(this, subscription);
-        if (url == null) {
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.cancel_help_title, subscription.getName()))
-                    .setMessage(R.string.cancel_help_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show();
-        } else if (CancelLinks.open(this, url)) {
+        if (CancelLinks.openOrExplain(this, subscription.getName(),
+                CancelLinks.resolve(this, subscription))) {
             pendingCancelConfirmation = subscription;
-        } else {
-            showMessage(R.string.error_no_browser);
         }
     }
 
@@ -271,13 +270,8 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         if (pendingCancelConfirmation != null) {
             Subscription subscription = pendingCancelConfirmation;
             pendingCancelConfirmation = null;
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.cancel_confirm_title, subscription.getName()))
-                    .setMessage(R.string.cancel_confirm_message)
-                    .setNegativeButton(R.string.action_not_yet, null)
-                    .setPositiveButton(R.string.action_mark_cancelled,
-                            (dialog, which) -> homeViewModel.setCancelled(subscription, true))
-                    .show();
+            CancelLinks.askIfCancelled(this, subscription.getName(),
+                    () -> homeViewModel.setCancelled(subscription, true));
         }
     }
 

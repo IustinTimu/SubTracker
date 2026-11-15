@@ -23,14 +23,22 @@ public final class AmountParser {
         }
     }
 
+    /**
+     * Un număr cu separator de mii („1.199,99”, „1,199.99”, „1 199,99”) sau fără („49,99”).
+     * Varianta cu mii e prima, altfel din „1.199,99” s-ar potrivi doar „199,99”.
+     * Numărul nu poate începe în mijlocul altuia („2026 123,45” nu devine 26.123,45).
+     */
+    private static final String NUMBER =
+            "(?<![\\d.,])(\\d{1,3}(?:[.,\\s]\\d{3})+(?:[.,]\\d{2})?|\\d{1,5}(?:[.,]\\d{2})?)";
+
     /** Număr urmat de monedă: „49,99 lei”, „9.99 EUR”, „12 €”. */
     private static final Pattern AMOUNT_THEN_CURRENCY = Pattern.compile(
-            "(\\d{1,5}(?:[.,]\\d{2})?)\\s?(lei|ron|euro|eur|€|usd|\\$)(?![a-z])",
+            NUMBER + "\\s?(lei|ron|euro|eur|€|usd|\\$)(?![a-z])",
             Pattern.CASE_INSENSITIVE);
 
     /** Monedă urmată de număr: „€9.99”, „RON 49.99”, „$11.99”. */
     private static final Pattern CURRENCY_THEN_AMOUNT = Pattern.compile(
-            "(lei|ron|eur|€|usd|\\$)\\s?(\\d{1,5}(?:[.,]\\d{2})?)",
+            "(lei|ron|eur|€|usd|\\$)\\s?" + NUMBER,
             Pattern.CASE_INSENSITIVE);
 
     private AmountParser() {
@@ -103,11 +111,23 @@ public final class AmountParser {
     @Nullable
     private static Result build(String number, String currencyText) {
         try {
-            double amount = Double.parseDouble(number.replace(',', '.'));
+            double amount = Double.parseDouble(normalize(number));
             return amount > 0 ? new Result(amount, toCurrencyCode(currencyText)) : null;
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * „1.199,99” → „1199.99”. Ultimul punct sau virgulă urmat de exact două cifre
+     * este separatorul de zecimale; celelalte separatoare (de mii) se elimină.
+     */
+    static String normalize(String number) {
+        String digits = number.replaceAll("\\s", "");
+        int last = digits.length() - 3;
+        boolean hasDecimals = last > 0 && (digits.charAt(last) == '.' || digits.charAt(last) == ',');
+        String whole = (hasDecimals ? digits.substring(0, last) : digits).replaceAll("[.,]", "");
+        return hasDecimals ? whole + "." + digits.substring(last + 1) : whole;
     }
 
     /** Transformă „lei”, „€”, „$” etc. în codurile folosite de aplicație. */

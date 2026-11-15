@@ -104,8 +104,8 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
                 return;
             }
             // Badge: „mâine”, „în 3 zile”… cu accent dacă plata e aproape.
-            badge.setText(DateUtils.relativeDays(context, subscription.getNextPaymentDate()));
-            boolean urgent = DateUtils.daysUntil(subscription.getNextPaymentDate()) <= URGENT_DAYS;
+            badge.setText(DateUtils.relativeDays(context, subscription.getUpcomingPaymentDate()));
+            boolean urgent = DateUtils.daysUntil(subscription.getUpcomingPaymentDate()) <= URGENT_DAYS;
             UiUtils.tintBackground(badge,
                     urgent ? R.color.st_accent_container : R.color.st_primary_container);
             badge.setTextColor(ContextCompat.getColor(context,

@@ -82,7 +82,7 @@ public class AddEditViewModel extends ViewModel {
                     return;
                 }
                 original = subscription;
-                selectedDate.setValue(subscription.getNextPaymentDate());
+                selectedDate.setValue(subscription.getUpcomingPaymentDate());
                 initial.setValue(new Event<>(subscription));
             });
         } else if (catalogItem != null) {

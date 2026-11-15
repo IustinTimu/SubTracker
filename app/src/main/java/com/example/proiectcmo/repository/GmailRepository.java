@@ -69,10 +69,10 @@ public class GmailRepository {
             "<style[^>]*>.*?</style>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final SubscriptionCatalog catalog;
-    /** Cererile de rețea nu au voie pe firul principal, așa că rulează pe un fir separat. */
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    /** Cererile de rețea nu au voie pe firul principal. Firele sunt comune (static), create o singură dată. */
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     /** Fire pe care serviciile din catalog sunt căutate în paralel. */
-    private final ExecutorService searchPool = Executors.newFixedThreadPool(5);
+    private static final ExecutorService searchPool = Executors.newFixedThreadPool(5);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public GmailRepository(SubscriptionCatalog catalog) {
@@ -106,6 +106,7 @@ public class GmailRepository {
         }
 
         List<DetectedSubscription> result = new ArrayList<>();
+        String lastError = null;
         for (Future<DetectedSubscription> task : tasks) {
             try {
                 DetectedSubscription detected = task.get();
@@ -113,13 +114,17 @@ public class GmailRepository {
                     result.add(detected);
                 }
             } catch (ExecutionException e) {
-                // eroarea reală (ex. HTTP 403) este cauza excepției
-                throw new IOException(String.valueOf(e.getCause() == null
-                        ? e.getMessage() : e.getCause().getMessage()));
+                // Un serviciu care dă eroare (ex. timeout) nu strică rezultatele celorlalte.
+                Throwable cause = e.getCause() == null ? e : e.getCause();
+                Log.w(TAG, "Căutarea unui serviciu a eșuat", cause);
+                lastError = String.valueOf(cause.getMessage());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException(e);
             }
+        }
+        if (result.isEmpty() && lastError != null) {
+            throw new IOException(lastError); // a eșuat tot (ex. HTTP 403: Gmail API oprit)
         }
         return result;
     }

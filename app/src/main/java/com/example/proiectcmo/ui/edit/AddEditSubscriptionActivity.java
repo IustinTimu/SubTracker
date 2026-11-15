@@ -34,7 +34,6 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
@@ -264,18 +263,8 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
         Subscription original = viewModel.getOriginal();
         String url = !typed.isEmpty() ? typed
                 : original == null ? null : CancelLinks.resolve(this, original);
-        if (url == null) {
-            String name = original == null ? UiUtils.textOf(nameLayout) : original.getName();
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.cancel_help_title, name))
-                    .setMessage(R.string.cancel_help_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show();
-        } else if (CancelLinks.open(this, url)) {
-            waitingForCancelConfirmation = true;
-        } else {
-            Snackbar.make(findViewById(R.id.main), R.string.error_no_browser, Snackbar.LENGTH_LONG).show();
-        }
+        String name = original == null ? UiUtils.textOf(nameLayout) : original.getName();
+        waitingForCancelConfirmation = CancelLinks.openOrExplain(this, name, url);
     }
 
     @Override
@@ -284,13 +273,7 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
         Subscription original = viewModel.getOriginal();
         if (waitingForCancelConfirmation && original != null) {
             waitingForCancelConfirmation = false;
-            new MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.cancel_confirm_title, original.getName()))
-                    .setMessage(R.string.cancel_confirm_message)
-                    .setNegativeButton(R.string.action_not_yet, null)
-                    .setPositiveButton(R.string.action_mark_cancelled,
-                            (dialog, which) -> viewModel.setCancelled(true))
-                    .show();
+            CancelLinks.askIfCancelled(this, original.getName(), () -> viewModel.setCancelled(true));
         }
     }
 

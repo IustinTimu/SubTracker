@@ -8,7 +8,7 @@ import java.util.Comparator;
 /** Criteriile de sortare a listei de abonamente (meniul „Sortează”). */
 public enum SortOrder {
     /** Cele mai apropiate plăți primele. */
-    NEXT_PAYMENT(Comparator.comparingLong(Subscription::getNextPaymentDate)),
+    NEXT_PAYMENT(Comparator.comparingLong(Subscription::getUpcomingPaymentDate)),
     /** Cele mai scumpe primele (cost lunar, convertit în lei). */
     PRICE((a, b) -> Double.compare(monthlyRon(b), monthlyRon(a))),
     /** Alfabetic după nume. */

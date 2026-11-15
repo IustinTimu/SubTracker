@@ -1,6 +1,5 @@
 package com.example.proiectcmo.model;
 
-import java.util.Calendar;
 
 /**
  * Un abonament propus de importul din Gmail: serviciul recunoscut după expeditor,
@@ -34,25 +33,12 @@ public class DetectedSubscription {
     /** Transformă propunerea într-un abonament care poate fi salvat în Firestore. */
     public Subscription toSubscription() {
         Subscription subscription = new Subscription(name, price, currency, billingCycle,
-                estimateNextPaymentDate(), category.name());
+                lastEmailDate, category.name());
+        // Emailul confirmă o plată deja făcută: următoarea este strict după acum.
+        subscription.setNextPaymentDate(subscription.paymentDateFrom(System.currentTimeMillis() + 1));
         subscription.setSource(Subscription.SOURCE_GMAIL);
         subscription.setCancelUrl(cancelUrl);
         return subscription;
-    }
-
-    /**
-     * Estimează următoarea plată: pornește de la data ultimului email și adaugă
-     * câte o lună (sau un an) până ajunge în viitor.
-     */
-    private long estimateNextPaymentDate() {
-        boolean yearly = Subscription.CYCLE_YEARLY.equals(billingCycle);
-        long now = System.currentTimeMillis();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(lastEmailDate);
-        while (calendar.getTimeInMillis() <= now) {
-            calendar.add(yearly ? Calendar.YEAR : Calendar.MONTH, 1);
-        }
-        return calendar.getTimeInMillis();
     }
 
     public String getName() { return name; }

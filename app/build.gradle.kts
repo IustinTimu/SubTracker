@@ -36,7 +36,6 @@ android {
 dependencies {
     implementation(libs.activity.ktx)
     implementation(libs.appcompat)
-    implementation(libs.constraintlayout)
     implementation(libs.material)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
@@ -49,8 +48,6 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.play.services.auth)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.espresso.core)
-    androidTestImplementation(libs.ext.junit)
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-auth")

@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.Exclude;
 
+import com.example.proiectcmo.utils.DateUtils;
+
 import java.util.Calendar;
 
 /**
@@ -86,13 +88,29 @@ public class Subscription {
     }
 
     /**
-     * Data plății de după cea curentă: +1 lună sau +1 an.
-     * Folosită de „Marchează ca plătit”.
+     * Următoarea plată, de azi încolo. Abonamentele se reînnoiesc singure, deci o dată
+     * salvată care a trecut avansează cu câte o lună (sau un an) până ajunge azi sau în viitor.
      */
+    @Exclude
+    public long getUpcomingPaymentDate() {
+        return paymentDateFrom(DateUtils.startOfDay(System.currentTimeMillis()));
+    }
+
+    /** Prima dată de plată (din seria lunară / anuală) care nu e înainte de {@code from}. */
+    public long paymentDateFrom(long from) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(nextPaymentDate);
+        while (calendar.getTimeInMillis() < from) {
+            calendar.add(isYearly() ? Calendar.YEAR : Calendar.MONTH, 1);
+        }
+        return calendar.getTimeInMillis();
+    }
+
+    /** Plata de după cea următoare: folosită de „Marchează ca plătit”. */
     @Exclude
     public long computeFollowingPaymentDate() {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(nextPaymentDate);
+        calendar.setTimeInMillis(getUpcomingPaymentDate());
         calendar.add(isYearly() ? Calendar.YEAR : Calendar.MONTH, 1);
         return calendar.getTimeInMillis();
     }
