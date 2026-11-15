@@ -62,6 +62,9 @@ public class StatisticsViewModel extends ViewModel {
         double maxMonthly = -1;
 
         for (Subscription s : subscriptions) {
+            if (s.isCancelled()) {
+                continue;
+            }
             double monthly = MoneyUtils.toRon(s.getMonthlyCost(), s.getCurrency());
             total += monthly;
             Category category = s.getCategoryEnum();

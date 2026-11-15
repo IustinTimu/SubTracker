@@ -85,7 +85,8 @@ public final class SubscriptionCatalog {
                         json.getString("cycle"),
                         Category.fromName(json.getString("category")),
                         domains,
-                        json.optString("keyword")));
+                        json.optString("keyword"),
+                        json.optString("cancelUrl")));
             }
         } catch (IOException | JSONException e) {
             Log.e(TAG, "Nu s-a putut citi catalogul", e);

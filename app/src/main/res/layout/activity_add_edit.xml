@@ -233,6 +233,82 @@
                         android:checked="true" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Link de anulare: precompletat din catalog, opțional la cele personalizate -->
+            <TextView
+                style="@style/Widget.SubTracker.FieldLabel"
+                android:layout_marginTop="20dp"
+                android:text="@string/label_cancel_url" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/cancelUrlLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/cancelUrlInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/placeholder_cancel_url"
+                    android:imeOptions="actionDone"
+                    android:inputType="textUri" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Card „Anulare”: vizibil doar la editarea unui abonament existent -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cancelCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/st_accent_container"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/cancel_card_title"
+                        android:textColor="@color/st_on_accent_container"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/cancelCardText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:lineSpacingMultiplier="1.15"
+                        android:text="@string/cancel_card_text"
+                        android:textColor="@color/st_text_primary"
+                        android:textSize="13sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/cancelPageButton"
+                        style="@style/Widget.SubTracker.Button.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/button_height"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/action_cancel_subscription"
+                        android:textColor="@color/st_error"
+                        app:icon="@drawable/ic_close"
+                        app:iconTint="@color/st_error" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/cancelStatusButton"
+                        style="@style/Widget.SubTracker.Button.Text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/action_mark_cancelled"
+                        android:textColor="@color/st_on_accent_container" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

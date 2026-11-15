@@ -29,6 +29,7 @@ import com.example.proiectcmo.ui.catalog.CatalogActivity;
 import com.example.proiectcmo.ui.edit.AddEditSubscriptionActivity;
 import com.example.proiectcmo.ui.gmail.GmailImportActivity;
 import com.example.proiectcmo.ui.statistics.StatisticsActivity;
+import com.example.proiectcmo.utils.CancelLinks;
 import com.example.proiectcmo.utils.DateUtils;
 import com.example.proiectcmo.utils.MoneyUtils;
 import com.example.proiectcmo.utils.UiUtils;
@@ -57,6 +58,8 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
     private HomeViewModel homeViewModel;
 
     private SubscriptionAdapter adapter;
+    /** Abonamentul a cărui pagină de anulare a fost deschisă; întrebăm la revenire dacă a fost anulat. */
+    private Subscription pendingCancelConfirmation;
     private RecyclerView list;
     private View emptyState;
     private TextView emptyTitle;
@@ -211,24 +214,71 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         openEditor(subscription);
     }
 
-    /** Click lung → meniu contextual: Editează / Marchează ca plătit / Șterge. */
+    /**
+     * Click lung → meniu contextual: Editează / Marchează ca plătit / Anulează abonamentul /
+     * Marchează ca anulat (sau Reactivează) / Șterge.
+     */
     @Override
     public void onSubscriptionLongClick(Subscription subscription, View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor, android.view.Gravity.END);
         popup.inflate(R.menu.menu_subscription_context);
         popup.setForceShowIcon(true);
+        // Un abonament anulat nu se mai plătește, deci nu are rost „Marchează ca plătit”.
+        popup.getMenu().findItem(R.id.action_mark_paid).setVisible(!subscription.isCancelled());
+        popup.getMenu().findItem(R.id.action_cancel_subscription).setVisible(!subscription.isCancelled());
+        popup.getMenu().findItem(R.id.action_toggle_cancelled).setTitle(subscription.isCancelled()
+                ? R.string.action_reactivate : R.string.action_mark_cancelled);
         popup.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.action_edit) {
                 openEditor(subscription);
             } else if (id == R.id.action_mark_paid) {
                 homeViewModel.markAsPaid(subscription);
+            } else if (id == R.id.action_cancel_subscription) {
+                openCancelPage(subscription);
+            } else if (id == R.id.action_toggle_cancelled) {
+                homeViewModel.setCancelled(subscription, !subscription.isCancelled());
             } else if (id == R.id.action_delete) {
                 confirmDelete(subscription);
             }
             return true;
         });
         popup.show();
+    }
+
+    /**
+     * Deschide pagina de anulare a serviciului. La întoarcerea în aplicație îl întrebăm
+     * pe utilizator dacă a anulat, ca să marcheze abonamentul (vezi {@link #onResume()}).
+     */
+    private void openCancelPage(Subscription subscription) {
+        String url = CancelLinks.resolve(this, subscription);
+        if (url == null) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.cancel_help_title, subscription.getName()))
+                    .setMessage(R.string.cancel_help_message)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        } else if (CancelLinks.open(this, url)) {
+            pendingCancelConfirmation = subscription;
+        } else {
+            showMessage(R.string.error_no_browser);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (pendingCancelConfirmation != null) {
+            Subscription subscription = pendingCancelConfirmation;
+            pendingCancelConfirmation = null;
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.cancel_confirm_title, subscription.getName()))
+                    .setMessage(R.string.cancel_confirm_message)
+                    .setNegativeButton(R.string.action_not_yet, null)
+                    .setPositiveButton(R.string.action_mark_cancelled,
+                            (dialog, which) -> homeViewModel.setCancelled(subscription, true))
+                    .show();
+        }
     }
 
     private void openEditor(Subscription subscription) {

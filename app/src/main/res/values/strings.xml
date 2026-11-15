@@ -168,12 +168,33 @@
     <string name="gmail_try_again">Încearcă din nou</string>
 
     <!-- Notificări -->
-    <string name="notification_channel_name">Plăți</string>
-    <string name="notification_channel_description">Amintiri cu o zi înainte de plata unui abonament</string>
-    <string name="notification_payment_title">Mâine se plătește %1$s</string>
-    <string name="notification_payment_text">Abonamentul %1$s (%2$s) se reînnoiește mâine.</string>
+    <string name="notification_channel_name">Alerte de plată</string>
+    <string name="notification_channel_description">Te avertizează cu o zi înainte ca un abonament să îți ia bani</string>
+    <string name="notification_payment_title">Mâine plătești %1$s</string>
+    <string name="notification_payment_text">Mâine îți va lua %1$s pentru %2$s. Dacă nu mai vrei abonamentul, anulează-l acum.</string>
+    <string name="notification_action_cancel">Anulează acum</string>
+    <string name="notification_action_keep">Păstrez</string>
     <string name="action_logout">Deconectare</string>
     <string name="action_cancel">Anulează</string>
     <string name="logout_title">Deconectare</string>
     <string name="logout_message">Sigur vrei să te deconectezi?</string>
+
+    <!-- Anularea abonamentelor -->
+    <string name="label_cancel_url">Link de anulare (opțional)</string>
+    <string name="placeholder_cancel_url">ex. netflix.com/cancelplan</string>
+    <string name="cancel_card_title">Anulare</string>
+    <string name="cancel_card_text">Aplicația nu poate anula singură abonamentul: niciun serviciu nu permite asta din aplicații externe. Te ducem direct pe pagina de anulare din contul tău.</string>
+    <string name="cancel_status_cancelled">Ai marcat acest abonament ca anulat. Nu mai intră în totaluri și nu mai primești alerte.</string>
+    <string name="action_cancel_subscription">Anulează abonamentul</string>
+    <string name="action_mark_cancelled">Marchează ca anulat</string>
+    <string name="action_reactivate">Reactivează abonamentul</string>
+    <string name="action_not_yet">Nu încă</string>
+    <string name="badge_cancelled">Anulat</string>
+    <string name="cancel_help_title">Unde anulezi %1$s</string>
+    <string name="cancel_help_message">Nu avem un link de anulare pentru acest abonament. De obicei se anulează:\n\n• din contul tău pe site-ul serviciului (Setări → Abonament sau Facturare);\n• din Google Play → Profil → Plăți și abonamente, dacă l-ai cumpărat dintr-o aplicație Android;\n• de pe iPhone, din Setări → numele tău → Abonamente.\n\nAdaugă link-ul în câmpul „Link de anulare” ca data viitoare să ajungi direct acolo.</string>
+    <string name="cancel_confirm_title">Ai anulat %1$s?</string>
+    <string name="cancel_confirm_message">Dacă ai anulat pe site, marchează-l ca anulat: nu mai intră în totaluri și nu mai primești alerte de plată.</string>
+    <string name="marked_cancelled">Abonamentul a fost marcat ca anulat.</string>
+    <string name="marked_active">Abonamentul este din nou activ.</string>
+    <string name="error_no_browser">Nu există un browser care să deschidă link-ul.</string>
 </resources>

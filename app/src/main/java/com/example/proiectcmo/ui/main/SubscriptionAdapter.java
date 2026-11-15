@@ -1,6 +1,7 @@
 package com.example.proiectcmo.ui.main;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,6 +91,18 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
                             ? R.string.cycle_yearly : R.string.cycle_monthly)));
             price.setText(MoneyUtils.format(subscription.getPrice(), subscription.getCurrency()));
 
+            price.setPaintFlags(subscription.isCancelled()
+                    ? price.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
+                    : price.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+            // Abonamentele anulate rămân în listă, estompate și cu badge-ul „Anulat”.
+            itemView.setAlpha(subscription.isCancelled() ? 0.6f : 1f);
+            if (subscription.isCancelled()) {
+                badge.setText(R.string.badge_cancelled);
+                UiUtils.tintBackground(badge, R.color.st_border);
+                badge.setTextColor(ContextCompat.getColor(context, R.color.st_text_secondary));
+                setClickListeners(subscription);
+                return;
+            }
             // Badge: „mâine”, „în 3 zile”… cu accent dacă plata e aproape.
             badge.setText(DateUtils.relativeDays(context, subscription.getNextPaymentDate()));
             boolean urgent = DateUtils.daysUntil(subscription.getNextPaymentDate()) <= URGENT_DAYS;
@@ -98,6 +111,10 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
             badge.setTextColor(ContextCompat.getColor(context,
                     urgent ? R.color.st_on_accent_container : R.color.st_on_primary_container));
 
+            setClickListeners(subscription);
+        }
+
+        private void setClickListeners(Subscription subscription) {
             itemView.setOnClickListener(v -> listener.onSubscriptionClick(subscription));
             itemView.setOnLongClickListener(v -> {
                 listener.onSubscriptionLongClick(subscription, v);
@@ -120,7 +137,8 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
                     && a.getNextPaymentDate() == b.getNextPaymentDate()
                     && String.valueOf(a.getCurrency()).equals(String.valueOf(b.getCurrency()))
                     && String.valueOf(a.getBillingCycle()).equals(String.valueOf(b.getBillingCycle()))
-                    && a.getCategoryEnum() == b.getCategoryEnum();
+                    && a.getCategoryEnum() == b.getCategoryEnum()
+                    && a.isCancelled() == b.isCancelled();
         }
     };
 }

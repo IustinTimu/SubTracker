@@ -27,6 +27,7 @@ public class SubscriptionRepository {
     private static final String USERS = "users";
     private static final String SUBSCRIPTIONS = "subscriptions";
     private static final String FIELD_NEXT_PAYMENT = "nextPaymentDate";
+    private static final String FIELD_CANCELLED = "cancelled";
 
     /** Rezultatul citirii listei de abonamente. */
     public interface ListCallback {
@@ -101,6 +102,14 @@ public class SubscriptionRepository {
     public void markAsPaid(Subscription subscription, OperationCallback callback) {
         collection().document(subscription.getId())
                 .update(FIELD_NEXT_PAYMENT, subscription.computeFollowingPaymentDate())
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> fail(e, callback));
+    }
+
+    /** Marchează abonamentul ca anulat (true) sau îl reactivează (false). */
+    public void setCancelled(Subscription subscription, boolean cancelled, OperationCallback callback) {
+        collection().document(subscription.getId())
+                .update(FIELD_CANCELLED, cancelled)
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(e -> fail(e, callback));
     }

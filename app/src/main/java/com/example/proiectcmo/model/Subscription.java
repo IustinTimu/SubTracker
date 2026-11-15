@@ -21,6 +21,13 @@ public class Subscription {
     /** Abonament plătit o dată pe an. */
     public static final String CYCLE_YEARLY = "YEARLY";
 
+    /** Abonament ales din catalogul de servicii populare. */
+    public static final String SOURCE_CATALOG = "CATALOG";
+    /** Abonament găsit de importul din Gmail. */
+    public static final String SOURCE_GMAIL = "GMAIL";
+    /** Abonament completat de utilizator („Personalizat”). */
+    public static final String SOURCE_MANUAL = "MANUAL";
+
     @DocumentId
     private String id;
     private String name;
@@ -33,6 +40,15 @@ public class Subscription {
     private String category;
     /** Dacă utilizatorul vrea notificare cu o zi înainte de plată. */
     private boolean notifyBeforePayment = true;
+    /** Pagina unde se anulează abonamentul (poate lipsi la cele personalizate). */
+    private String cancelUrl;
+    /** De unde a fost adăugat: {@link #SOURCE_CATALOG}, {@link #SOURCE_GMAIL} sau {@link #SOURCE_MANUAL}. */
+    private String source;
+    /**
+     * true după ce utilizatorul a anulat abonamentul pe site-ul serviciului.
+     * Un abonament anulat rămâne în listă, dar nu mai intră în totaluri și nu mai primește notificări.
+     */
+    private boolean cancelled;
 
     /** Constructor gol, necesar pentru Firestore. */
     public Subscription() {
@@ -101,6 +117,15 @@ public class Subscription {
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getCancelUrl() { return cancelUrl; }
+    public void setCancelUrl(String cancelUrl) { this.cancelUrl = cancelUrl; }
+
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+
+    public boolean isCancelled() { return cancelled; }
+    public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
 
     public boolean isNotifyBeforePayment() { return notifyBeforePayment; }
     public void setNotifyBeforePayment(boolean notifyBeforePayment) {

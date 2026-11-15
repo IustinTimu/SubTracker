@@ -16,22 +16,28 @@ public class DetectedSubscription {
     private final Category category;
     /** Data celei mai recente facturi găsite, în milisecunde. */
     private final long lastEmailDate;
+    /** Pagina de anulare, preluată din catalog. */
+    private final String cancelUrl;
     private boolean selected = true;
 
     public DetectedSubscription(String name, double price, String currency, String billingCycle,
-                                Category category, long lastEmailDate) {
+                                Category category, long lastEmailDate, String cancelUrl) {
         this.name = name;
         this.price = price;
         this.currency = currency;
         this.billingCycle = billingCycle;
         this.category = category;
         this.lastEmailDate = lastEmailDate;
+        this.cancelUrl = cancelUrl;
     }
 
     /** Transformă propunerea într-un abonament care poate fi salvat în Firestore. */
     public Subscription toSubscription() {
-        return new Subscription(name, price, currency, billingCycle,
+        Subscription subscription = new Subscription(name, price, currency, billingCycle,
                 estimateNextPaymentDate(), category.name());
+        subscription.setSource(Subscription.SOURCE_GMAIL);
+        subscription.setCancelUrl(cancelUrl);
+        return subscription;
     }
 
     /**

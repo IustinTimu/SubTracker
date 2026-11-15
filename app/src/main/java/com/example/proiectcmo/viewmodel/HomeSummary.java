@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Datele afișate în cardul „Total lunar” de pe ecranul principal.
- * Se calculează din toată lista (nu doar din cea filtrată), în lei.
+ * Se calculează din toată lista (nu doar din cea filtrată), în lei, fără abonamentele anulate.
  */
 public final class HomeSummary {
 
@@ -26,14 +26,19 @@ public final class HomeSummary {
     /** Calculează totalurile și găsește cea mai apropiată plată. */
     public static HomeSummary from(List<Subscription> subscriptions) {
         double monthly = 0;
+        int active = 0;
         Subscription next = null;
         for (Subscription s : subscriptions) {
+            if (s.isCancelled()) {
+                continue; // abonamentele anulate nu mai costă nimic
+            }
+            active++;
             monthly += MoneyUtils.toRon(s.getMonthlyCost(), s.getCurrency());
             if (next == null || s.getNextPaymentDate() < next.getNextPaymentDate()) {
                 next = s;
             }
         }
-        return new HomeSummary(monthly, subscriptions.size(), next);
+        return new HomeSummary(monthly, active, next);
     }
 
     public double getMonthlyTotal() { return monthlyTotal; }

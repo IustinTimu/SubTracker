@@ -43,6 +43,10 @@ public class AddEditViewModel extends ViewModel {
 
     /** Id-ul abonamentului editat (null = abonament nou). */
     @Nullable private String editingId;
+    /** Abonamentul încărcat la editare; de la el păstrăm sursa și starea „anulat”. */
+    @Nullable private Subscription original;
+    /** Sursa unui abonament nou: din catalog sau completat manual. */
+    private String newSource = Subscription.SOURCE_MANUAL;
     private boolean initialized;
 
     public LiveData<Event<Subscription>> getInitial() { return initial; }
@@ -77,6 +81,7 @@ public class AddEditViewModel extends ViewModel {
                     errors.setValue(new Event<>(R.string.error_generic));
                     return;
                 }
+                original = subscription;
                 selectedDate.setValue(subscription.getNextPaymentDate());
                 initial.setValue(new Event<>(subscription));
             });
@@ -85,6 +90,8 @@ public class AddEditViewModel extends ViewModel {
                     catalogItem.getCurrency(), catalogItem.getBillingCycle(),
                     defaultNextPayment(catalogItem.getBillingCycle()),
                     catalogItem.getCategory().name());
+            prefilled.setCancelUrl(catalogItem.getCancelUrl());
+            newSource = Subscription.SOURCE_CATALOG;
             selectedDate.setValue(prefilled.getNextPaymentDate());
             initial.setValue(new Event<>(prefilled));
         }
@@ -96,7 +103,7 @@ public class AddEditViewModel extends ViewModel {
 
     /** Validează datele și salvează abonamentul în Firestore. */
     public void save(String name, String priceText, String currency, boolean yearly,
-                     Category category, boolean notify) {
+                     Category category, boolean notify, String cancelUrl) {
         name = name.trim();
         double price = MoneyUtils.parse(priceText);
         Long date = selectedDate.getValue();
@@ -115,9 +122,40 @@ public class AddEditViewModel extends ViewModel {
                 date, category.name());
         subscription.setId(editingId);
         subscription.setNotifyBeforePayment(notify);
+        subscription.setCancelUrl(cancelUrl.trim().isEmpty() ? null : cancelUrl.trim());
+        // La editare se păstrează de unde a venit abonamentul și dacă a fost anulat.
+        subscription.setSource(original != null ? original.getSource() : newSource);
+        subscription.setCancelled(original != null && original.isCancelled());
 
         saving.setValue(true);
         repository.save(subscription, new OperationCallback() {
+            @Override
+            public void onSuccess() {
+                saving.setValue(false);
+                saved.setValue(new Event<>(true));
+            }
+
+            @Override
+            public void onError(int messageRes) {
+                saving.setValue(false);
+                errors.setValue(new Event<>(messageRes));
+            }
+        });
+    }
+
+    /** @return abonamentul editat, după ce s-a încărcat; null pentru unul nou. */
+    @Nullable
+    public Subscription getOriginal() {
+        return original;
+    }
+
+    /** Marchează abonamentul editat ca anulat sau îl reactivează, apoi închide ecranul. */
+    public void setCancelled(boolean cancelled) {
+        if (original == null) {
+            return;
+        }
+        saving.setValue(true);
+        repository.setCancelled(original, cancelled, new OperationCallback() {
             @Override
             public void onSuccess() {
                 saving.setValue(false);

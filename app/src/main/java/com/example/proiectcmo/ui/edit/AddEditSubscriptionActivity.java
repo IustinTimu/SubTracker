@@ -20,6 +20,7 @@ import com.example.proiectcmo.data.SubscriptionCatalog;
 import com.example.proiectcmo.model.Category;
 import com.example.proiectcmo.model.Subscription;
 import com.example.proiectcmo.notifications.NotificationHelper;
+import com.example.proiectcmo.utils.CancelLinks;
 import com.example.proiectcmo.utils.DatePickerUtils;
 import com.example.proiectcmo.utils.DateUtils;
 import com.example.proiectcmo.utils.MoneyUtils;
@@ -33,6 +34,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
@@ -49,6 +51,8 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
 
     private static final String EXTRA_ID = "subscription_id";
     private static final String EXTRA_CATALOG_NAME = "catalog_name";
+    /** Deschide direct explicația despre anulare (din alerta de plată, când nu există link). */
+    public static final String EXTRA_SHOW_CANCEL = "show_cancel";
     private static final String DATE_PICKER_TAG = "date_picker";
     private static final int CHIP_ID_BASE = 0x00100000; // în afara zonei id-urilor din R
 
@@ -61,6 +65,11 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
     private MaterialButtonToggleGroup cycleToggle;
     private ChipGroup categoryChips;
     private MaterialSwitch notifySwitch;
+    private TextInputLayout cancelUrlLayout;
+    private View cancelCard;
+    private MaterialButton cancelStatusButton;
+    /** true după ce s-a deschis pagina de anulare; la revenire întrebăm dacă abonamentul a fost anulat. */
+    private boolean waitingForCancelConfirmation;
     private MaterialButton saveButton;
     private View progressBar;
 
@@ -108,6 +117,9 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
         cycleToggle = findViewById(R.id.cycleToggle);
         categoryChips = findViewById(R.id.categoryChips);
         notifySwitch = findViewById(R.id.notifySwitch);
+        cancelUrlLayout = findViewById(R.id.cancelUrlLayout);
+        cancelCard = findViewById(R.id.cancelCard);
+        cancelStatusButton = findViewById(R.id.cancelStatusButton);
         saveButton = findViewById(R.id.saveButton);
         progressBar = findViewById(R.id.progressBar);
     }
@@ -161,7 +173,16 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
                 currencyInput.getText().toString(),
                 cycleToggle.getCheckedButtonId() == R.id.yearlyButton,
                 selectedCategory(),
-                notifySwitch.isChecked()));
+                notifySwitch.isChecked(),
+                UiUtils.textOf(cancelUrlLayout)));
+
+        findViewById(R.id.cancelPageButton).setOnClickListener(v -> openCancelPage());
+        cancelStatusButton.setOnClickListener(v -> {
+            Subscription original = viewModel.getOriginal();
+            if (original != null) {
+                viewModel.setCancelled(!original.isCancelled());
+            }
+        });
     }
 
     private void observeViewModel() {
@@ -169,6 +190,13 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
             Subscription subscription = event.getIfNotHandled();
             if (subscription != null) {
                 fillForm(subscription);
+                if (viewModel.isEditing()) {
+                    showCancelCard(subscription);
+                    if (getIntent().getBooleanExtra(EXTRA_SHOW_CANCEL, false)) {
+                        getIntent().removeExtra(EXTRA_SHOW_CANCEL); // o singură dată
+                        openCancelPage();
+                    }
+                }
             }
         });
         viewModel.getSelectedDate().observe(this, date -> {
@@ -205,12 +233,64 @@ public class AddEditSubscriptionActivity extends AppCompatActivity {
                 ? MoneyUtils.RON : subscription.getCurrency(), false);
         cycleToggle.check(subscription.isYearly() ? R.id.yearlyButton : R.id.monthlyButton);
         notifySwitch.setChecked(subscription.isNotifyBeforePayment());
+        // Abonamentele mai vechi nu au link salvat: îl propunem pe cel din catalog.
+        String cancelUrl = CancelLinks.resolve(this, subscription);
+        cancelUrlLayout.getEditText().setText(cancelUrl == null ? "" : cancelUrl);
         Category category = subscription.getCategoryEnum();
         for (int i = 0; i < categoryChips.getChildCount(); i++) {
             Chip chip = (Chip) categoryChips.getChildAt(i);
             if (chip.getTag() == category) {
                 chip.setChecked(true);
             }
+        }
+    }
+
+    /** Cardul „Anulare”: butonul spre pagina de anulare și marcarea ca anulat / reactivarea. */
+    private void showCancelCard(Subscription subscription) {
+        cancelCard.setVisibility(View.VISIBLE);
+        boolean cancelled = subscription.isCancelled();
+        findViewById(R.id.cancelPageButton).setVisibility(cancelled ? View.GONE : View.VISIBLE);
+        ((TextView) findViewById(R.id.cancelCardText)).setText(
+                cancelled ? R.string.cancel_status_cancelled : R.string.cancel_card_text);
+        cancelStatusButton.setText(cancelled ? R.string.action_reactivate : R.string.action_mark_cancelled);
+    }
+
+    /**
+     * Deschide pagina de anulare (link-ul din câmp sau din catalog). Dacă nu există link,
+     * explică unde se anulează de obicei un abonament.
+     */
+    private void openCancelPage() {
+        String typed = UiUtils.textOf(cancelUrlLayout).trim();
+        Subscription original = viewModel.getOriginal();
+        String url = !typed.isEmpty() ? typed
+                : original == null ? null : CancelLinks.resolve(this, original);
+        if (url == null) {
+            String name = original == null ? UiUtils.textOf(nameLayout) : original.getName();
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.cancel_help_title, name))
+                    .setMessage(R.string.cancel_help_message)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        } else if (CancelLinks.open(this, url)) {
+            waitingForCancelConfirmation = true;
+        } else {
+            Snackbar.make(findViewById(R.id.main), R.string.error_no_browser, Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Subscription original = viewModel.getOriginal();
+        if (waitingForCancelConfirmation && original != null) {
+            waitingForCancelConfirmation = false;
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(getString(R.string.cancel_confirm_title, original.getName()))
+                    .setMessage(R.string.cancel_confirm_message)
+                    .setNegativeButton(R.string.action_not_yet, null)
+                    .setPositiveButton(R.string.action_mark_cancelled,
+                            (dialog, which) -> viewModel.setCancelled(true))
+                    .show();
         }
     }
 

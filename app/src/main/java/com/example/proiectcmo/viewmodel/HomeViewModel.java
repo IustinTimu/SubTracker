@@ -75,6 +75,12 @@ public class HomeViewModel extends AndroidViewModel {
         repository.markAsPaid(subscription, messageCallback(R.string.marked_paid));
     }
 
+    /** Marchează abonamentul ca anulat sau îl reactivează. */
+    public void setCancelled(Subscription subscription, boolean cancelled) {
+        repository.setCancelled(subscription, cancelled, messageCallback(
+                cancelled ? R.string.marked_cancelled : R.string.marked_active));
+    }
+
     public void delete(Subscription subscription) {
         // Mesajul „Abonament șters” cu butonul Anulează îl afișează activitatea imediat;
         // aici raportăm doar eventualele erori.

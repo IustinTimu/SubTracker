@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.example.proiectcmo.model.Subscription;
+import com.example.proiectcmo.utils.CancelLinks;
 import com.example.proiectcmo.utils.DateUtils;
 import com.example.proiectcmo.utils.MoneyUtils;
 
@@ -36,8 +37,8 @@ public final class PaymentReminderScheduler {
 
         long now = System.currentTimeMillis();
         for (Subscription subscription : subscriptions) {
-            if (!subscription.isNotifyBeforePayment()) {
-                continue;
+            if (!subscription.isNotifyBeforePayment() || subscription.isCancelled()) {
+                continue; // fără alertă pentru abonamentele anulate
             }
             long remindAt = reminderTime(subscription.getNextPaymentDate());
             if (remindAt <= now) {
@@ -48,6 +49,8 @@ public final class PaymentReminderScheduler {
                     .putString(PaymentReminderWorker.KEY_NAME, subscription.getName())
                     .putString(PaymentReminderWorker.KEY_AMOUNT,
                             MoneyUtils.format(subscription.getPrice(), subscription.getCurrency()))
+                    .putString(PaymentReminderWorker.KEY_CANCEL_URL,
+                            CancelLinks.resolve(context, subscription))
                     .build();
             OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(PaymentReminderWorker.class)
                     .setInitialDelay(remindAt - now, TimeUnit.MILLISECONDS)

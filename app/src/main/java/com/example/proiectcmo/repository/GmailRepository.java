@@ -151,7 +151,8 @@ public class GmailRepository {
                 String cycle = YEARLY_WORDS.matcher(text).find()
                         ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
                 return new DetectedSubscription(item.getName(), amount.amount, amount.currency,
-                        cycle, item.getCategory(), message.optLong("internalDate"));
+                        cycle, item.getCategory(), message.optLong("internalDate"),
+                        item.getCancelUrl());
             }
         }
         return null;

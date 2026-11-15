@@ -25,9 +25,12 @@ public final class CatalogItem {
      * comun mai multor produse (ex. apple.com → „Apple Music”). Gol dacă nu e nevoie.
      */
     private final String keyword;
+    /** Pagina oficială unde se gestionează sau se anulează abonamentul; gol dacă nu există. */
+    private final String cancelUrl;
 
     public CatalogItem(String name, double price, String currency, String billingCycle,
-                       Category category, List<String> emailDomains, String keyword) {
+                       Category category, List<String> emailDomains, String keyword,
+                       String cancelUrl) {
         this.name = name;
         this.price = price;
         this.currency = currency;
@@ -35,6 +38,7 @@ public final class CatalogItem {
         this.category = category;
         this.emailDomains = Collections.unmodifiableList(emailDomains);
         this.keyword = keyword;
+        this.cancelUrl = cancelUrl;
     }
 
     public String getName() { return name; }
@@ -50,4 +54,6 @@ public final class CatalogItem {
     public List<String> getEmailDomains() { return emailDomains; }
 
     public String getKeyword() { return keyword; }
+
+    public String getCancelUrl() { return cancelUrl; }
 }
