@@ -80,11 +80,6 @@
         <item quantity="few">în %d zile</item>
         <item quantity="other">în %d de zile</item>
     </plurals>
-    <plurals name="overdue_days">
-        <item quantity="one">acum %d zi</item>
-        <item quantity="few">acum %d zile</item>
-        <item quantity="other">acum %d de zile</item>
-    </plurals>
 
     <!-- Meniul contextual (04) -->
     <string name="action_edit">Editează</string>

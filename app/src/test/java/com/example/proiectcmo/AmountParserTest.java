@@ -49,6 +49,21 @@ public class AmountParserTest {
     }
 
     @Test
+    public void endOfMonthDatesDoNotDriftTo28() {
+        Calendar jan31 = Calendar.getInstance();
+        jan31.set(2026, Calendar.JANUARY, 31, 0, 0, 0);
+        Subscription monthly = new Subscription("Test", 10, "RON", Subscription.CYCLE_MONTHLY,
+                jan31.getTimeInMillis(), "OTHER");
+        Calendar may1 = Calendar.getInstance();
+        may1.set(2026, Calendar.MAY, 1, 0, 0, 0);
+
+        Calendar result = Calendar.getInstance();
+        result.setTimeInMillis(monthly.paymentDateFrom(may1.getTimeInMillis()));
+        assertEquals(Calendar.MAY, result.get(Calendar.MONTH));
+        assertEquals(31, result.get(Calendar.DAY_OF_MONTH));
+    }
+
+    @Test
     public void upcomingPaymentRollsPastDatesForward() {
         Calendar threeMonthsAgo = Calendar.getInstance();
         threeMonthsAgo.add(Calendar.MONTH, -3);

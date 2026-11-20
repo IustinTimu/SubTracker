@@ -45,10 +45,9 @@ public final class DateUtils {
             return context.getString(R.string.due_today);
         } else if (days == 1) {
             return context.getString(R.string.due_tomorrow);
-        } else if (days > 1) {
-            return UiUtils.quantityString(context, R.plurals.due_in_days, days, days);
         }
-        return UiUtils.quantityString(context, R.plurals.overdue_days, -days, -days);
+        // datele vin din getUpcomingPaymentDate(), deci nu sunt niciodată în trecut
+        return UiUtils.quantityString(context, R.plurals.due_in_days, days, days);
     }
 
     /** Ex.: „12 dec. 2026”. */

@@ -40,10 +40,6 @@ public final class PaymentReminderScheduler {
             if (!subscription.isNotifyBeforePayment() || subscription.isCancelled()) {
                 continue; // fără alertă pentru abonamentele anulate
             }
-            long remindAt = reminderTime(subscription.getUpcomingPaymentDate());
-            if (remindAt <= now) {
-                continue; // ziua de dinainte a trecut deja
-            }
             Data input = new Data.Builder()
                     .putString(PaymentReminderWorker.KEY_ID, subscription.getId())
                     .putString(PaymentReminderWorker.KEY_NAME, subscription.getName())
@@ -51,14 +47,37 @@ public final class PaymentReminderScheduler {
                             MoneyUtils.format(subscription.getPrice(), subscription.getCurrency()))
                     .putString(PaymentReminderWorker.KEY_CANCEL_URL,
                             CancelLinks.resolve(context, subscription))
+                    .putString(PaymentReminderWorker.KEY_CYCLE, subscription.getBillingCycle())
+                    .putLong(PaymentReminderWorker.KEY_FIRST_DATE, subscription.getNextPaymentDate())
                     .build();
-            OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(PaymentReminderWorker.class)
-                    .setInitialDelay(remindAt - now, TimeUnit.MILLISECONDS)
-                    .setInputData(input)
-                    .addTag(TAG_REMINDERS)
-                    .build();
-            workManager.enqueue(request);
+            // ziua de dinainte a trecut deja → alerta pentru plata de după
+            long payment = subscription.getUpcomingPaymentDate();
+            if (reminderTime(payment) <= now) {
+                payment = subscription.computeFollowingPaymentDate();
+            }
+            enqueue(workManager, input, payment, now);
         }
+    }
+
+    /**
+     * Programează alerta pentru plata din {@code paymentDate}. Folosită și de
+     * {@link PaymentReminderWorker}, care după fiecare alertă o programează pe următoarea,
+     * ca alertele să continue chiar dacă aplicația nu este deschisă.
+     */
+    static void enqueue(WorkManager workManager, Data input, long paymentDate, long now) {
+        long remindAt = reminderTime(paymentDate);
+        if (remindAt <= now) {
+            return;
+        }
+        Data data = new Data.Builder()
+                .putAll(input)
+                .putLong(PaymentReminderWorker.KEY_PAYMENT_DATE, paymentDate)
+                .build();
+        workManager.enqueue(new OneTimeWorkRequest.Builder(PaymentReminderWorker.class)
+                .setInitialDelay(remindAt - now, TimeUnit.MILLISECONDS)
+                .setInputData(data)
+                .addTag(TAG_REMINDERS)
+                .build());
     }
 
     /** Momentul notificării: cu o zi înainte de data plății, la ora 10:00. */

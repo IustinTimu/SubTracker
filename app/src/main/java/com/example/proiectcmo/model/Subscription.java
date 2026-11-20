@@ -96,12 +96,18 @@ public class Subscription {
         return paymentDateFrom(DateUtils.startOfDay(System.currentTimeMillis()));
     }
 
-    /** Prima dată de plată (din seria lunară / anuală) care nu e înainte de {@code from}. */
+    /**
+     * Prima dată de plată (din seria lunară / anuală) care nu e înainte de {@code from}.
+     * Lunile se adaugă mereu la data inițială: din 31 ianuarie rezultă 28 februarie,
+     * dar apoi 31 martie, nu 28 martie.
+     */
     public long paymentDateFrom(long from) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(nextPaymentDate);
-        while (calendar.getTimeInMillis() < from) {
-            calendar.add(isYearly() ? Calendar.YEAR : Calendar.MONTH, 1);
+        Calendar base = Calendar.getInstance();
+        base.setTimeInMillis(nextPaymentDate);
+        Calendar calendar = (Calendar) base.clone();
+        for (int steps = 1; calendar.getTimeInMillis() < from; steps++) {
+            calendar = (Calendar) base.clone();
+            calendar.add(isYearly() ? Calendar.YEAR : Calendar.MONTH, steps);
         }
         return calendar.getTimeInMillis();
     }
@@ -109,10 +115,7 @@ public class Subscription {
     /** Plata de după cea următoare: folosită de „Marchează ca plătit”. */
     @Exclude
     public long computeFollowingPaymentDate() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(getUpcomingPaymentDate());
-        calendar.add(isYearly() ? Calendar.YEAR : Calendar.MONTH, 1);
-        return calendar.getTimeInMillis();
+        return paymentDateFrom(getUpcomingPaymentDate() + 1);
     }
 
     public String getId() { return id; }
