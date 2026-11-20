@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Meniul (options menu) din bara de sus a ecranului principal.
-    „Statistici” apare ca iconiță; celelalte opțiuni sunt în meniul cu trei puncte.
--->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <item
         android:id="@+id/action_statistics"
         android:icon="@drawable/ic_stats"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Opțiunile de sortare (butonul „Sortează”); doar una poate fi bifată. -->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
         <item android:id="@+id/sort_date" android:title="@string/sort_by_date" />

@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Ecranul 03 – Acasă.
-    AppBarLayout conține antetul și cardul „Total lunar”, care se ascund la derulare;
-    filtrele și titlul „Următoarele plăți” rămân fixe deasupra listei.
--->
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -12,7 +8,6 @@
     android:layout_height="match_parent"
     android:background="@color/st_background"
     tools:context=".ui.main.MainActivity">
-
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBar"
         android:layout_width="match_parent"
@@ -20,8 +15,6 @@
         android:background="@color/st_background"
         app:elevation="0dp"
         app:liftOnScroll="false">
-
-        <!-- Antet: salut + titlu, cu meniul în dreapta -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -29,13 +22,11 @@
             android:paddingEnd="12dp"
             app:contentInsetStart="@dimen/screen_padding"
             app:layout_scrollFlags="scroll|enterAlways">
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:orientation="vertical">
-
                 <TextView
                     android:id="@+id/greetingText"
                     android:layout_width="wrap_content"
@@ -50,8 +41,6 @@
                     android:textAppearance="@style/TextAppearance.SubTracker.Title" />
             </LinearLayout>
         </com.google.android.material.appbar.MaterialToolbar>
-
-        <!-- Cardul principal cu totalul lunar -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/totalCard"
             android:layout_width="match_parent"
@@ -61,13 +50,11 @@
             app:cardBackgroundColor="@color/st_primary"
             app:cardElevation="0dp"
             app:layout_scrollFlags="scroll|enterAlways">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -82,7 +69,6 @@
                     android:layout_marginTop="4dp"
                     android:baselineAligned="true"
                     android:orientation="horizontal">
-
                     <TextView
                         android:id="@+id/totalAmountText"
                         android:layout_width="wrap_content"
@@ -101,7 +87,6 @@
                         android:textColor="@color/st_on_primary"
                         android:textSize="18sp" />
                 </LinearLayout>
-
                 <TextView
                     android:id="@+id/activeSummaryText"
                     android:layout_width="wrap_content"
@@ -129,8 +114,6 @@
                     tools:text="Următoarea plată: Netflix · mâine" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
-        <!-- Filtre: Toate / Lunare / Anuale -->
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/filterChips"
             android:layout_width="match_parent"
@@ -141,7 +124,6 @@
             app:selectionRequired="true"
             app:singleLine="true"
             app:singleSelection="true">
-
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipAll"
                 style="@style/Widget.SubTracker.Chip"
@@ -163,8 +145,6 @@
                 android:layout_height="wrap_content"
                 android:text="@string/filter_yearly" />
         </com.google.android.material.chip.ChipGroup>
-
-        <!-- „Următoarele plăți” + „Sortează” -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -173,7 +153,6 @@
             android:orientation="horizontal"
             android:paddingStart="@dimen/screen_padding"
             android:paddingEnd="12dp">
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -191,7 +170,6 @@
                 app:iconSize="18dp" />
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/subscriptionsList"
         android:layout_width="match_parent"
@@ -203,7 +181,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_subscription" />
 
-    <!-- Starea „listă goală” -->
     <LinearLayout
         android:id="@+id/emptyState"
         android:layout_width="match_parent"
@@ -214,12 +191,10 @@
         android:paddingTop="40dp"
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
         <FrameLayout
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:background="@drawable/bg_logo">
-
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
@@ -228,7 +203,6 @@
                 android:src="@drawable/ic_repeat"
                 app:tint="@color/st_primary" />
         </FrameLayout>
-
         <TextView
             android:id="@+id/emptyTitle"
             android:layout_width="wrap_content"
@@ -247,7 +221,6 @@
             android:text="@string/empty_subscriptions_hint"
             android:textAppearance="@style/TextAppearance.SubTracker.Body" />
     </LinearLayout>
-
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="32dp"

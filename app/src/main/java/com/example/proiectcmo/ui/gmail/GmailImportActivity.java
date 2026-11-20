@@ -28,15 +28,9 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Collections;
 
-/**
- * Import din Gmail: cere acces de citire la Gmail, caută emailurile de la serviciile
- * din catalog și afișează „Abonamente găsite”, de unde utilizatorul le bifează
- * pe cele pe care vrea să le adauge.
- */
 public class GmailImportActivity extends AppCompatActivity {
-
     private static final String TAG = "GmailImportActivity";
-    /** Permisiunea cerută: doar citirea emailurilor, fără trimitere sau ștergere. */
+
     private static final String GMAIL_READONLY_SCOPE =
             "https://www.googleapis.com/auth/gmail.readonly";
 
@@ -49,12 +43,11 @@ public class GmailImportActivity extends AppCompatActivity {
     private View messagePanel;
     private Button importButton;
 
-    /** Primește răspunsul ferestrei în care utilizatorul acordă accesul la Gmail. */
     private final ActivityResultLauncher<IntentSenderRequest> consentLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartIntentSenderForResult(), result -> {
                         if (result.getResultCode() != RESULT_OK) {
-                            return; // utilizatorul a renunțat
+                            return;
                         }
                         try {
                             AuthorizationResult authorization = Identity.getAuthorizationClient(this)
@@ -107,7 +100,7 @@ public class GmailImportActivity extends AppCompatActivity {
         viewModel.getImported().observe(this, event -> {
             if (event.getIfNotHandled() != null) {
                 Toast.makeText(this, R.string.gmail_imported, Toast.LENGTH_SHORT).show();
-                finish(); // înapoi pe ecranul principal, unde apar abonamentele noi
+                finish();
             }
         });
         viewModel.getSaveError().observe(this, event -> {
@@ -118,7 +111,6 @@ public class GmailImportActivity extends AppCompatActivity {
         });
     }
 
-    /** Afișează un singur panou, în funcție de starea din ViewModel. */
     private void showPanel(GmailImportViewModel.Status status) {
         introPanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.INTRO));
         loadingPanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.LOADING));
@@ -130,10 +122,6 @@ public class GmailImportActivity extends AppCompatActivity {
         return visible ? View.VISIBLE : View.GONE;
     }
 
-    /**
-     * Cere de la Google acces de citire la Gmail. La prima cerere, Google afișează
-     * o fereastră de consimțământ; dacă accesul a fost deja acordat, primim direct token-ul.
-     */
     private void requestGmailAccess() {
         AuthorizationRequest request = AuthorizationRequest.builder()
                 .setRequestedScopes(Collections.singletonList(new Scope(GMAIL_READONLY_SCOPE)))

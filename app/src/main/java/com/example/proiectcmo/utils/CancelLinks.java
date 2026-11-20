@@ -15,22 +15,10 @@ import com.example.proiectcmo.model.CatalogItem;
 import com.example.proiectcmo.model.Subscription;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-/**
- * Găsește și deschide pagina de anulare a unui abonament.
- *
- * Aplicația nu poate anula singură un abonament: niciun serviciu nu oferă acest lucru
- * printr-un API public. De aceea deschidem pagina oficială, unde utilizatorul anulează
- * din contul lui.
- */
 public final class CancelLinks {
-
     private CancelLinks() {
     }
 
-    /**
-     * @return link-ul salvat pe abonament sau, dacă lipsește (abonamente adăugate înainte
-     * de această funcție), cel din catalog după nume. Null dacă nu se cunoaște niciunul.
-     */
     @Nullable
     public static String resolve(Context context, Subscription subscription) {
         if (subscription.getCancelUrl() != null && !subscription.getCancelUrl().trim().isEmpty()) {
@@ -40,17 +28,11 @@ public final class CancelLinks {
         return item == null || item.getCancelUrl().isEmpty() ? null : item.getCancelUrl();
     }
 
-    /** Intentul care deschide link-ul în browser. */
     public static Intent browserIntent(String url) {
         String fixed = url.startsWith("http://") || url.startsWith("https://") ? url : "https://" + url;
         return new Intent(Intent.ACTION_VIEW, Uri.parse(fixed));
     }
 
-    /**
-     * Deschide pagina de anulare în browser. Fără link, explică unde se anulează de obicei.
-     *
-     * @return true dacă pagina s-a deschis; atunci, la revenire, apelați {@link #askIfCancelled}
-     */
     public static boolean openOrExplain(Activity activity, String name, @Nullable String url) {
         if (url == null) {
             new MaterialAlertDialogBuilder(activity)
@@ -69,7 +51,6 @@ public final class CancelLinks {
         }
     }
 
-    /** Întreabă „Ai anulat X?” după întoarcerea de pe pagina de anulare. */
     public static void askIfCancelled(Activity activity, String name, Runnable markCancelled) {
         new MaterialAlertDialogBuilder(activity)
                 .setTitle(activity.getString(R.string.cancel_confirm_title, name))

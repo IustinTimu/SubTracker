@@ -20,23 +20,12 @@ import com.example.proiectcmo.utils.DateUtils;
 import com.example.proiectcmo.utils.MoneyUtils;
 import com.example.proiectcmo.utils.UiUtils;
 
-/**
- * Adapter pentru lista de abonamente de pe ecranul principal.
- *
- * ListAdapter + DiffUtil compară lista veche cu cea nouă și actualizează doar rândurile
- * modificate (cu animație), în loc să redeseneze toată lista la fiecare schimbare din Firestore.
- */
 public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionAdapter.ViewHolder> {
-
-    /** Plățile la cel mult atâtea zile distanță sunt evidențiate cu culoarea de accent. */
     private static final int URGENT_DAYS = 3;
 
-    /** Evenimentele de click transmise activității. */
     public interface Listener {
-        /** Click simplu → deschide editarea. */
         void onSubscriptionClick(Subscription subscription);
 
-        /** Click lung → meniul contextual, ancorat pe cardul apăsat. */
         void onSubscriptionLongClick(Subscription subscription, View anchor);
     }
 
@@ -60,7 +49,6 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
         holder.bind(getItem(position));
     }
 
-    /** Ține referințele către view-urile unui rând, ca să nu fie căutate la fiecare derulare. */
     class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView avatar;
         private final TextView name;
@@ -94,7 +82,7 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
             price.setPaintFlags(subscription.isCancelled()
                     ? price.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
                     : price.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
-            // Abonamentele anulate rămân în listă, estompate și cu badge-ul „Anulat”.
+
             itemView.setAlpha(subscription.isCancelled() ? 0.6f : 1f);
             if (subscription.isCancelled()) {
                 badge.setText(R.string.badge_cancelled);
@@ -103,7 +91,7 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
                 setClickListeners(subscription);
                 return;
             }
-            // Badge: „mâine”, „în 3 zile”… cu accent dacă plata e aproape.
+
             badge.setText(DateUtils.relativeDays(context, subscription.getUpcomingPaymentDate()));
             boolean urgent = DateUtils.daysUntil(subscription.getUpcomingPaymentDate()) <= URGENT_DAYS;
             UiUtils.tintBackground(badge,
@@ -118,12 +106,11 @@ public class SubscriptionAdapter extends ListAdapter<Subscription, SubscriptionA
             itemView.setOnClickListener(v -> listener.onSubscriptionClick(subscription));
             itemView.setOnLongClickListener(v -> {
                 listener.onSubscriptionLongClick(subscription, v);
-                return true; // evenimentul a fost tratat → nu se mai declanșează și click-ul simplu
+                return true;
             });
         }
     }
 
-    /** Spune RecyclerView-ului când două elemente reprezintă același abonament / au același conținut. */
     private static final DiffUtil.ItemCallback<Subscription> DIFF = new DiffUtil.ItemCallback<Subscription>() {
         @Override
         public boolean areItemsTheSame(@NonNull Subscription a, @NonNull Subscription b) {

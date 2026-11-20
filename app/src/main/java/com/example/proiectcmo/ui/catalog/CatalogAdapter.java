@@ -19,12 +19,7 @@ import com.example.proiectcmo.utils.UiUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Grila cu serviciile din catalog. Primul element este mereu „Personalizat”.
- */
 public class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.ViewHolder> {
-
-    /** @param item serviciul ales sau null pentru „Personalizat” */
     public interface Listener {
         void onCatalogItemSelected(@Nullable CatalogItem item);
     }
@@ -36,7 +31,6 @@ public class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.ViewHold
         this.listener = listener;
     }
 
-    /** Înlocuiește lista afișată (după căutare). */
     public void submit(List<CatalogItem> newItems) {
         items.clear();
         items.addAll(newItems);
@@ -45,7 +39,7 @@ public class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.ViewHold
 
     @Override
     public int getItemCount() {
-        return items.size() + 1; // +1 pentru „Personalizat”
+        return items.size() + 1;
     }
 
     @NonNull

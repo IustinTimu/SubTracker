@@ -22,12 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Catalogul de abonamente populare, deschis de butonul + de pe ecranul principal.
- * Alegerea unui serviciu deschide formularul precompletat; „Personalizat” îl deschide gol.
- */
 public class CatalogActivity extends AppCompatActivity implements CatalogAdapter.Listener {
-
     private List<CatalogItem> allItems;
     private CatalogAdapter adapter;
 
@@ -66,7 +61,6 @@ public class CatalogActivity extends AppCompatActivity implements CatalogAdapter
         });
     }
 
-    /** Păstrează doar serviciile al căror nume conține textul căutat. */
     private void filter(String query) {
         String needle = query.trim().toLowerCase(Locale.ROOT);
         List<CatalogItem> result = new ArrayList<>();
@@ -81,6 +75,6 @@ public class CatalogActivity extends AppCompatActivity implements CatalogAdapter
     @Override
     public void onCatalogItemSelected(@Nullable CatalogItem item) {
         startActivity(AddEditSubscriptionActivity.addIntent(this, item == null ? null : item.getName()));
-        finish(); // după salvare utilizatorul revine direct pe ecranul principal
+        finish();
     }
 }

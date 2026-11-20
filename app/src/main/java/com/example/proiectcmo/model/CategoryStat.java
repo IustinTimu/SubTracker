@@ -1,8 +1,6 @@
 package com.example.proiectcmo.model;
 
-/** Cât se cheltuie lunar (în lei) pe o categorie și ce procent reprezintă din total. */
 public final class CategoryStat {
-
     private final Category category;
     private final double monthlyAmount;
     private final float fraction;
@@ -17,7 +15,6 @@ public final class CategoryStat {
 
     public double getMonthlyAmount() { return monthlyAmount; }
 
-    /** Valoare între 0 și 1 (ex. 0.25 = 25%). */
     public float getFraction() { return fraction; }
 
     public int getPercent() { return Math.round(fraction * 100); }

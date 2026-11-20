@@ -34,30 +34,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
-/**
- * Citește emailurile din Gmail prin API-ul REST și caută în ele abonamente.
- *
- * Emailurile sunt descărcate și analizate doar pe telefon, în memorie: nu se salvează
- * nicăieri și nu sunt trimise către alt server. Accesul este doar de citire
- * (permisiunea gmail.readonly).
- */
 public class GmailRepository {
-
-    /** Rezultatul căutării, livrat pe firul principal. */
     public interface Callback {
         void onResult(List<DetectedSubscription> subscriptions);
 
-        /** @param detail codul HTTP sau mesajul erorii, pentru afișare */
         void onError(String detail);
     }
 
     private static final String TAG = "GmailRepository";
     private static final String BASE_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages";
-    /** Câte emailuri recente citim pentru fiecare serviciu (fiecare înseamnă o cerere HTTP). */
+
     private static final int MESSAGES_PER_SERVICE = 5;
     private static final int MAX_TEXT_LENGTH = 20000;
 
-    /** Cuvinte care arată că emailul este o chitanță/factură, nu o reclamă. */
     private static final String RECEIPT_WORDS =
             "(factura OR factură OR chitanta OR chitanță OR plata OR plată OR abonament"
                     + " OR receipt OR invoice OR payment OR subscription OR renewal)";
@@ -69,9 +58,9 @@ public class GmailRepository {
             "<style[^>]*>.*?</style>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private final SubscriptionCatalog catalog;
-    /** Cererile de rețea nu au voie pe firul principal. Firele sunt comune (static), create o singură dată. */
+
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-    /** Fire pe care serviciile din catalog sunt căutate în paralel. */
+
     private static final ExecutorService searchPool = Executors.newFixedThreadPool(5);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -79,12 +68,6 @@ public class GmailRepository {
         this.catalog = catalog;
     }
 
-    /**
-     * Caută emailuri din ultimul an de la serviciile din catalog și întoarce
-     * câte un abonament propus pentru fiecare serviciu găsit.
-     *
-     * @param accessToken token-ul OAuth primit după ce utilizatorul a acordat accesul
-     */
     public void findSubscriptions(String accessToken, Callback callback) {
         executor.execute(() -> {
             try {
@@ -99,7 +82,6 @@ public class GmailRepository {
 
     private List<DetectedSubscription> search(String token)
             throws IOException, JSONException {
-        // Fiecare serviciu este căutat separat, în paralel, ca să dureze mai puțin.
         List<Future<DetectedSubscription>> tasks = new ArrayList<>();
         for (CatalogItem item : catalog.getItems()) {
             tasks.add(searchPool.submit(() -> searchService(item, token)));
@@ -114,7 +96,6 @@ public class GmailRepository {
                     result.add(detected);
                 }
             } catch (ExecutionException e) {
-                // Un serviciu care dă eroare (ex. timeout) nu strică rezultatele celorlalte.
                 Throwable cause = e.getCause() == null ? e : e.getCause();
                 Log.w(TAG, "Căutarea unui serviciu a eșuat", cause);
                 lastError = String.valueOf(cause.getMessage());
@@ -124,20 +105,14 @@ public class GmailRepository {
             }
         }
         if (result.isEmpty() && lastError != null) {
-            throw new IOException(lastError); // a eșuat tot (ex. HTTP 403: Gmail API oprit)
+            throw new IOException(lastError);
         }
         return result;
     }
 
-    /**
-     * Caută cele mai recente chitanțe ale unui serviciu.
-     *
-     * @return abonamentul propus sau null dacă serviciul nu are facturi în ultimul an
-     */
     @Nullable
     private DetectedSubscription searchService(CatalogItem item, String token)
             throws IOException, JSONException {
-        // 1. Lista id-urilor de emailuri, de la cel mai nou la cel mai vechi
         String query = "from:(" + String.join(" OR ", item.getEmailDomains()) + ") "
                 + (item.getKeyword().isEmpty() ? "" : "\"" + item.getKeyword() + "\" ")
                 + RECEIPT_WORDS + " newer_than:1y";
@@ -148,26 +123,20 @@ public class GmailRepository {
             return null;
         }
 
-        // 2. Emailurile sunt descărcate pe rând, până la primul care conține o sumă de bani.
-        //    Un email fără sumă este reclamă sau notificare, nu factură, deci nu dovedește
-        //    că utilizatorul chiar plătește abonamentul.
         for (int i = 0; i < messages.length(); i++) {
             String id = messages.getJSONObject(i).getString("id");
             JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
             String text = readText(message);
             AmountParser.Result amount;
             if (item.getKeyword().isEmpty()) {
-                // Expeditor dedicat (ex. netflix.com): orice sumă din email este a serviciului.
                 amount = AmountParser.parse(text);
             } else {
-                // Expeditor comun (ex. apple.com trimite chitanțe pentru multe produse):
-                // emailul contează doar dacă numește produsul, iar prețul se ia de lângă nume.
                 if (!text.toLowerCase(Locale.ROOT).contains(item.getKeyword().toLowerCase(Locale.ROOT))) {
                     continue;
                 }
                 amount = AmountParser.parseNear(text, item.getKeyword());
                 if (amount == null) {
-                    amount = AmountParser.parse(text); // ex. „ofertă acceptată”, cu prețul mai jos
+                    amount = AmountParser.parse(text);
                 }
             }
             if (amount != null) {
@@ -181,7 +150,6 @@ public class GmailRepository {
         return null;
     }
 
-    /** Subiectul, rezumatul și corpul unui email, puse într-un singur text. */
     private static String readText(JSONObject message) {
         StringBuilder text = new StringBuilder();
         JSONObject payload = message.optJSONObject("payload");
@@ -206,10 +174,6 @@ public class GmailRepository {
         return "";
     }
 
-    /**
-     * Adună textul din corpul emailului. Un email poate avea mai multe părți
-     * (text simplu, HTML, atașamente), așa că funcția le parcurge recursiv.
-     */
     private static void appendBodyText(JSONObject part, StringBuilder out) {
         if (out.length() >= MAX_TEXT_LENGTH) {
             return;
@@ -219,11 +183,9 @@ public class GmailRepository {
         String data = body == null ? "" : body.optString("data");
         if (!data.isEmpty() && mimeType.startsWith("text/")) {
             try {
-                // corpul vine codificat Base64 (varianta „URL safe”)
                 String decoded = new String(
                         Base64.decode(data, Base64.URL_SAFE), StandardCharsets.UTF_8);
                 if (mimeType.equals("text/html")) {
-                    // Blocurile <style> nu sunt text vizibil; altfel CSS-ul ajunge în mijlocul textului.
                     decoded = STYLE_BLOCK.matcher(decoded).replaceAll(" ");
                     decoded = Html.fromHtml(decoded, Html.FROM_HTML_MODE_COMPACT).toString();
                 }
@@ -241,7 +203,6 @@ public class GmailRepository {
         }
     }
 
-    /** Cerere HTTP GET autentificată cu token-ul OAuth. */
     private static String get(String url, String token) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         try {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Varianta întunecată a paletei (folosită automat când telefonul e în dark mode). -->
+
 <resources>
     <color name="st_primary">#8FBFC4</color>
     <color name="st_on_primary">#12302F</color>
@@ -7,16 +7,13 @@
     <color name="st_on_primary_container">#D6E8E6</color>
     <color name="st_secondary">#7FA39B</color>
     <color name="st_on_secondary">#0F201D</color>
-
     <color name="st_background">#171C1E</color>
     <color name="st_surface">#212829</color>
     <color name="st_border">#364043</color>
-
     <color name="st_accent">#E8A87C</color>
     <color name="st_accent_container">#4A3426</color>
     <color name="st_on_accent_container">#F2C7A6</color>
     <color name="st_error">#E08A8A</color>
-
     <color name="st_text_primary">#E6ECEB</color>
     <color name="st_text_secondary">#A3ACB0</color>
 </resources>

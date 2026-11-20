@@ -21,17 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Logica ecranului principal: lista de abonamente (filtrată și sortată), totalurile
- * și acțiunile din meniul contextual (marchează ca plătit, șterge, anulează ștergerea).
- *
- * Extinde AndroidViewModel pentru că are nevoie de Context ca să programeze notificările.
- */
 public class HomeViewModel extends AndroidViewModel {
-
     private final SubscriptionRepository repository = new SubscriptionRepository();
 
-    /** Toate abonamentele, direct din Firestore. */
     private final SubscriptionsLiveData all = repository.observeAll();
 
     private final MutableLiveData<BillingFilter> filter = new MutableLiveData<>(BillingFilter.ALL);
@@ -43,28 +35,24 @@ public class HomeViewModel extends AndroidViewModel {
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
-        // Lista vizibilă se recalculează când se schimbă datele, filtrul sau sortarea.
+
         visible.addSource(all, list -> updateVisible());
         visible.addSource(filter, f -> updateVisible());
         visible.addSource(sortOrder, s -> updateVisible());
 
         summary.addSource(all, list -> {
             summary.setValue(HomeSummary.from(list));
-            // Ori de câte ori se schimbă abonamentele, reprogramăm notificările de plată.
+
             PaymentReminderScheduler.sync(getApplication(), list);
         });
     }
 
-    /** Abonamentele de afișat în listă (după filtru și sortare). Null până la prima încărcare. */
     public LiveData<List<Subscription>> getVisibleSubscriptions() { return visible; }
 
-    /** Totalurile pentru cardul principal. */
     public LiveData<HomeSummary> getSummary() { return summary; }
 
-    /** Mesaje de afișat o singură dată (Snackbar). */
     public LiveData<Event<Integer>> getMessages() { return messages; }
 
-    /** Eroarea de încărcare a listei din Firestore. */
     public LiveData<Event<Integer>> getLoadErrors() { return all.getErrors(); }
 
     public LiveData<BillingFilter> getFilter() { return filter; }
@@ -79,19 +67,15 @@ public class HomeViewModel extends AndroidViewModel {
         repository.markAsPaid(subscription, messageCallback(R.string.marked_paid));
     }
 
-    /** Marchează abonamentul ca anulat sau îl reactivează. */
     public void setCancelled(Subscription subscription, boolean cancelled) {
         repository.setCancelled(subscription, cancelled, messageCallback(
                 cancelled ? R.string.marked_cancelled : R.string.marked_active));
     }
 
     public void delete(Subscription subscription) {
-        // Mesajul „Abonament șters” cu butonul Anulează îl afișează activitatea imediat;
-        // aici raportăm doar eventualele erori.
         repository.delete(subscription, messageCallback(0));
     }
 
-    /** Readaugă abonamentul șters (butonul „Anulează” din Snackbar), cu același id. */
     public void undoDelete(Subscription subscription) {
         repository.save(subscription, messageCallback(0));
     }
@@ -99,7 +83,7 @@ public class HomeViewModel extends AndroidViewModel {
     private void updateVisible() {
         List<Subscription> source = all.getValue();
         if (source == null) {
-            return; // datele nu au sosit încă din Firestore
+            return;
         }
         BillingFilter currentFilter = filter.getValue();
         List<Subscription> result = new ArrayList<>();
@@ -115,7 +99,6 @@ public class HomeViewModel extends AndroidViewModel {
         visible.setValue(result);
     }
 
-    /** Callback care publică mesajul dat la succes (0 = fără mesaj) sau eroarea. */
     private OperationCallback messageCallback(@StringRes int successMessage) {
         return new OperationCallback() {
             @Override

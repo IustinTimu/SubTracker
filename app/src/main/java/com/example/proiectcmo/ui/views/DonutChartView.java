@@ -18,16 +18,7 @@ import com.example.proiectcmo.model.CategoryStat;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Grafic de tip „donut” desenat de mână pe Canvas (fără biblioteci externe).
- *
- * Fiecare categorie este un arc de cerc proporțional cu procentul ei, cu un mic spațiu
- * între arce. În centru se afișează totalul lunar. La primele date, arcele se desenează
- * animat (ValueAnimator de la 0 la 1).
- */
 public class DonutChartView extends View {
-
-    /** Spațiul dintre segmente, în grade. */
     private static final float GAP_DEGREES = 3f;
     private static final long ANIMATION_MS = 700;
 
@@ -40,7 +31,7 @@ public class DonutChartView extends View {
     private final List<CategoryStat> segments = new ArrayList<>();
     private String centerValue = "";
     private String centerLabel = "";
-    /** Progresul animației, între 0 și 1. */
+
     private float progress = 1f;
     private boolean animatedOnce;
 
@@ -71,12 +62,6 @@ public class DonutChartView extends View {
         labelPaint.setColor(ContextCompat.getColor(context, R.color.st_text_secondary));
     }
 
-    /**
-     * Setează datele graficului.
-     * @param stats categoriile (procentele trebuie să însumeze ~1)
-     * @param value textul mare din centru (ex. „245,97”)
-     * @param label textul mic de sub el (ex. „lei lunar”)
-     */
     public void setData(List<CategoryStat> stats, String value, String label) {
         segments.clear();
         segments.addAll(stats);
@@ -97,7 +82,6 @@ public class DonutChartView extends View {
         }
     }
 
-    /** Graficul e mereu pătrat: înălțimea = lățimea disponibilă. */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = getDefaultSize(getSuggestedMinimumWidth(), widthMeasureSpec);
@@ -114,10 +98,8 @@ public class DonutChartView extends View {
         float top = (getHeight() - diameter) / 2f;
         bounds.set(left, top, left + diameter, top + diameter);
 
-        // Cercul de fundal (vizibil când nu există date)
         canvas.drawArc(bounds, 0, 360, false, trackPaint);
 
-        // Segmentele: pornim de sus (-90°) și mergem în sensul acelor de ceasornic.
         float start = -90f;
         float gap = segments.size() > 1 ? GAP_DEGREES : 0f;
         for (CategoryStat stat : segments) {
@@ -126,14 +108,13 @@ public class DonutChartView extends View {
                 continue;
             }
             arcPaint.setColor(ContextCompat.getColor(getContext(), stat.getCategory().getColorRes()));
-            // Capetele rotunjite „mănâncă” din spațiu, așa că scădem grosimea liniei convertită în grade.
+
             float capDegrees = (float) Math.toDegrees(stroke / diameter);
             float drawSweep = Math.max(0.1f, sweep - gap - capDegrees);
             canvas.drawArc(bounds, start + (gap + capDegrees) / 2f, drawSweep, false, arcPaint);
             start += sweep;
         }
 
-        // Textul din centru
         float centerX = getWidth() / 2f;
         float centerY = getHeight() / 2f;
         canvas.drawText(centerValue, centerX, centerY + valuePaint.getTextSize() * 0.2f, valuePaint);

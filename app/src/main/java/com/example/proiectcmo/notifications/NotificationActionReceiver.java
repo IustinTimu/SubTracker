@@ -6,12 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-/**
- * Primește apăsările pe butoanele alertei de plată:
- * „Păstrez” doar închide alerta, iar „Anulează acum” o închide și deschide pagina de anulare.
- */
 public class NotificationActionReceiver extends BroadcastReceiver {
-
     private static final String ACTION_KEEP = "com.example.proiectcmo.action.KEEP";
     private static final String ACTION_CANCEL = "com.example.proiectcmo.action.CANCEL";
     private static final String EXTRA_NOTIFICATION_ID = "notification_id";
@@ -43,7 +38,6 @@ public class NotificationActionReceiver extends BroadcastReceiver {
                 try {
                     context.startActivity(NotificationHelper.browserIntent(url));
                 } catch (ActivityNotFoundException e) {
-                    // niciun browser instalat – nu avem ce deschide
                 }
             }
         }

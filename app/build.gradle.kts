@@ -15,12 +15,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-
     }
 
-    // Cheie de test comună pentru toată echipa: oricine construiește proiectul obține
-    // aceeași amprentă SHA-1, înregistrată o singură dată în Firebase (login cu Google).
-    // Nu e o cheie secretă; aplicația publicată se semnează cu o cheie de release separată.
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug.keystore")
@@ -50,15 +46,15 @@ dependencies {
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
     implementation(libs.recyclerview)
-    // Notificări programate (cu o zi înainte de plată)
+
     implementation(libs.work.runtime)
-    // Login cu Google (Credential Manager) și autorizare Gmail (Identity AuthorizationClient)
+
     implementation(libs.credentials)
     implementation(libs.credentials.play.services)
     implementation(libs.googleid)
     implementation(libs.play.services.auth)
     testImplementation(libs.junit)
-    // Firebase
+
     implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")

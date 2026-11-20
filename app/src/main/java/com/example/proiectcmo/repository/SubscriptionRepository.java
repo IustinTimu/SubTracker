@@ -16,32 +16,23 @@ import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Singurul loc din aplicație care citește și scrie abonamentele în Cloud Firestore.
- * Datele fiecărui utilizator stau la {@code users/{uid}/subscriptions}; regulile Firestore
- * permit accesul doar proprietarului.
- */
 public class SubscriptionRepository {
-
     private static final String TAG = "SubscriptionRepository";
     private static final String USERS = "users";
     private static final String SUBSCRIPTIONS = "subscriptions";
     private static final String FIELD_NEXT_PAYMENT = "nextPaymentDate";
     private static final String FIELD_CANCELLED = "cancelled";
 
-    /** Rezultatul citirii listei de abonamente. */
     public interface ListCallback {
         void onLoaded(List<Subscription> subscriptions);
     }
 
-    /** Rezultatul încărcării unui singur abonament (pentru ecranul de editare). */
     public interface LoadCallback {
         void onLoaded(@Nullable Subscription subscription);
     }
 
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-    /** Colecția utilizatorului logat. Aruncă excepție dacă nu e nimeni logat. */
     @NonNull
     private CollectionReference collection() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -51,12 +42,10 @@ public class SubscriptionRepository {
         return firestore.collection(USERS).document(user.getUid()).collection(SUBSCRIPTIONS);
     }
 
-    /** Lista abonamentelor, actualizată automat la orice modificare (ordonată după data plății). */
     public SubscriptionsLiveData observeAll() {
         return new SubscriptionsLiveData(collection().orderBy(FIELD_NEXT_PAYMENT));
     }
 
-    /** Citește un abonament după id (pentru modul „Editează”). */
     public void getById(String id, LoadCallback callback) {
         collection().document(id).get()
                 .addOnSuccessListener(doc -> callback.onLoaded(doc.toObject(Subscription.class)))
@@ -66,7 +55,6 @@ public class SubscriptionRepository {
                 });
     }
 
-    /** Citește o singură dată toate abonamentele (fără actualizări automate). */
     public void getAllOnce(ListCallback callback) {
         collection().get()
                 .addOnSuccessListener(snapshot ->
@@ -77,7 +65,6 @@ public class SubscriptionRepository {
                 });
     }
 
-    /** Adaugă un abonament nou (fără id) sau îl actualizează pe cel existent (cu id). */
     public void save(Subscription subscription, OperationCallback callback) {
         CollectionReference col = collection();
         if (subscription.getId() == null) {
@@ -91,14 +78,12 @@ public class SubscriptionRepository {
         }
     }
 
-    /** Șterge abonamentul. */
     public void delete(Subscription subscription, OperationCallback callback) {
         collection().document(subscription.getId()).delete()
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(e -> fail(e, callback));
     }
 
-    /** Mută data următoarei plăți cu o lună / un an mai târziu. */
     public void markAsPaid(Subscription subscription, OperationCallback callback) {
         collection().document(subscription.getId())
                 .update(FIELD_NEXT_PAYMENT, subscription.computeFollowingPaymentDate())
@@ -106,7 +91,6 @@ public class SubscriptionRepository {
                 .addOnFailureListener(e -> fail(e, callback));
     }
 
-    /** Marchează abonamentul ca anulat (true) sau îl reactivează (false). */
     public void setCancelled(Subscription subscription, boolean cancelled, OperationCallback callback) {
         collection().document(subscription.getId())
                 .update(FIELD_CANCELLED, cancelled)
@@ -114,7 +98,6 @@ public class SubscriptionRepository {
                 .addOnFailureListener(e -> fail(e, callback));
     }
 
-    /** Salvează mai multe abonamente deodată, într-o singură operație (importul din Gmail). */
     public void saveAll(List<Subscription> subscriptions, OperationCallback callback) {
         CollectionReference col = collection();
         WriteBatch batch = firestore.batch();

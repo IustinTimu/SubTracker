@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Ecranul 01 – Autentificare. ScrollView ca formularul să rămână accesibil când apare tastatura. -->
+
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,21 +9,17 @@
     android:background="@color/st_background"
     android:fillViewport="true"
     tools:context=".ui.auth.LoginActivity">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="vertical"
         android:padding="@dimen/screen_padding">
-
-        <!-- Logo: pătrat rotunjit cu iconița „repeat” -->
         <FrameLayout
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/bg_logo">
-
             <ImageView
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -32,7 +28,6 @@
                 android:src="@drawable/ic_repeat"
                 app:tint="@color/st_primary" />
         </FrameLayout>
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -61,7 +56,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:startIconDrawable="@drawable/ic_mail">
-
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,7 +64,6 @@
                 android:imeOptions="actionNext"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
-
         <TextView
             style="@style/Widget.SubTracker.FieldLabel"
             android:layout_marginTop="16dp"
@@ -82,7 +75,6 @@
             android:layout_height="wrap_content"
             app:endIconMode="password_toggle"
             app:startIconDrawable="@drawable/ic_lock">
-
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -91,7 +83,6 @@
                 android:imeOptions="actionDone"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
-
         <TextView
             android:id="@+id/forgotPasswordText"
             android:layout_width="wrap_content"
@@ -119,7 +110,6 @@
             android:indeterminateTint="@color/st_primary"
             android:visibility="gone" />
 
-        <!-- Separator „sau” -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -127,7 +117,6 @@
             android:layout_marginBottom="20dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
-
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
@@ -148,7 +137,6 @@
                 android:layout_weight="1"
                 android:background="@color/st_border" />
         </LinearLayout>
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/googleButton"
             style="@style/Widget.SubTracker.Button.Outlined"

@@ -46,19 +46,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 
-/**
- * Ecranul principal (03): totalul lunar, filtrele și lista abonamentelor.
- *
- * Evenimente UI: click pe card → editare, click lung → meniu contextual,
- * FAB → catalogul de abonamente, meniul din bara de sus → Statistici / Import Gmail / Deconectare.
- */
 public class MainActivity extends AppCompatActivity implements SubscriptionAdapter.Listener {
-
     private AuthViewModel authViewModel;
     private HomeViewModel homeViewModel;
 
     private SubscriptionAdapter adapter;
-    /** Abonamentul a cărui pagină de anulare a fost deschisă; întrebăm la revenire dacă a fost anulat. */
+
     private Subscription pendingCancelConfirmation;
     private RecyclerView list;
     private View emptyState;
@@ -69,11 +62,8 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
     private TextView activeSummaryText;
     private TextView nextPaymentPill;
 
-    /** Cere permisiunea de notificări (Android 13+); răspunsul vine asincron. */
     private final ActivityResultLauncher<String> notificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                // Dacă utilizatorul refuză, aplicația funcționează normal, doar fără notificări;
-                // formularul de abonament îi reamintește acest lucru când activează notificarea.
             });
 
     @Override
@@ -81,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         super.onCreate(savedInstanceState);
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // Protecție: ecranul principal nu poate fi deschis fără un utilizator logat.
         FirebaseUser user = authViewModel.getCurrentUser();
         if (user == null) {
             openLoginScreen();
@@ -93,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         UiUtils.applySystemBarsPadding(findViewById(R.id.main));
 
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        // Iconița „trei puncte” în cerc, ca în design.
+
         toolbar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.ic_more_circle));
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -115,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         if (name == null || name.isEmpty()) {
             name = user.getEmail();
         } else {
-            name = name.split(" ")[0]; // doar prenumele, ca în design: „Bună, Ana”
+            name = name.split(" ")[0];
         }
         greeting.setText(getString(R.string.greeting_user, name));
 
@@ -153,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         sortButton.setOnClickListener(this::showSortMenu);
     }
 
-    /** Meniu pop-up cu criteriile de sortare; criteriul curent apare bifat. */
     private void showSortMenu(View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor);
         popup.inflate(R.menu.menu_sort);
@@ -195,7 +183,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         boolean empty = subscriptions.isEmpty();
         emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
         if (empty) {
-            // Lista e goală din cauza filtrului sau chiar nu există abonamente?
             boolean filtered = homeViewModel.getFilter().getValue() != BillingFilter.ALL;
             emptyTitle.setText(filtered ? R.string.empty_filter : R.string.empty_subscriptions);
             emptyHint.setVisibility(filtered ? View.GONE : View.VISIBLE);
@@ -214,23 +201,17 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
                 DateUtils.relativeDays(this, next.getUpcomingPaymentDate())));
     }
 
-    // ---------- Evenimente din listă ----------
-
     @Override
     public void onSubscriptionClick(Subscription subscription) {
         openEditor(subscription);
     }
 
-    /**
-     * Click lung → meniu contextual: Editează / Marchează ca plătit / Anulează abonamentul /
-     * Marchează ca anulat (sau Reactivează) / Șterge.
-     */
     @Override
     public void onSubscriptionLongClick(Subscription subscription, View anchor) {
         PopupMenu popup = new PopupMenu(this, anchor, android.view.Gravity.END);
         popup.inflate(R.menu.menu_subscription_context);
         popup.setForceShowIcon(true);
-        // Un abonament anulat nu se mai plătește, deci nu are rost „Marchează ca plătit”.
+
         popup.getMenu().findItem(R.id.action_mark_paid).setVisible(!subscription.isCancelled());
         popup.getMenu().findItem(R.id.action_cancel_subscription).setVisible(!subscription.isCancelled());
         popup.getMenu().findItem(R.id.action_toggle_cancelled).setTitle(subscription.isCancelled()
@@ -253,10 +234,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         popup.show();
     }
 
-    /**
-     * Deschide pagina de anulare a serviciului. La întoarcerea în aplicație îl întrebăm
-     * pe utilizator dacă a anulat, ca să marcheze abonamentul (vezi {@link #onResume()}).
-     */
     private void openCancelPage(Subscription subscription) {
         if (CancelLinks.openOrExplain(this, subscription.getName(),
                 CancelLinks.resolve(this, subscription))) {
@@ -279,7 +256,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         startActivity(AddEditSubscriptionActivity.editIntent(this, subscription.getId()));
     }
 
-    /** Dialog de confirmare înainte de ștergere; după ștergere se poate anula din Snackbar. */
     private void confirmDelete(Subscription subscription) {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.delete_title)
@@ -297,13 +273,10 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
                 .show();
     }
 
-    // ---------- Meniul din bara de sus ----------
-
-    /** Încarcă meniul din bara de sus (res/menu/menu_main.xml). */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        // „Statistici” are un aspect personalizat (iconiță în cerc), deci tratăm click-ul manual.
+
         MenuItem statistics = menu.findItem(R.id.action_statistics);
         View actionView = statistics.getActionView();
         if (actionView != null) {
@@ -313,7 +286,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         return true;
     }
 
-    /** Tratează click-urile pe opțiunile din meniu. */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
@@ -330,7 +302,6 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         return super.onOptionsItemSelected(item);
     }
 
-    /** Cere confirmarea utilizatorului înainte de deconectare. */
     private void confirmLogout() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.logout_title)

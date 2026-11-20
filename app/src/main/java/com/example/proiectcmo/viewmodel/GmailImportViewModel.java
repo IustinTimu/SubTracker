@@ -23,13 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/**
- * Logica ecranului „Import din Gmail”: pornește căutarea, ține lista de abonamente
- * găsite și le salvează pe cele bifate.
- */
 public class GmailImportViewModel extends AndroidViewModel {
-
-    /** Ce panou afișează ecranul. */
     public enum Status { INTRO, LOADING, RESULTS, MESSAGE }
 
     private final GmailRepository gmailRepository;
@@ -39,7 +33,7 @@ public class GmailImportViewModel extends AndroidViewModel {
     private final MutableLiveData<List<DetectedSubscription>> items =
             new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<Integer> selectedCount = new MutableLiveData<>(0);
-    /** Textul afișat când nu s-a găsit nimic sau a apărut o eroare. */
+
     private final MutableLiveData<String> message = new MutableLiveData<>();
     private final MutableLiveData<Event<Boolean>> imported = new MutableLiveData<>();
     private final MutableLiveData<Event<Integer>> saveError = new MutableLiveData<>();
@@ -61,7 +55,6 @@ public class GmailImportViewModel extends AndroidViewModel {
 
     public LiveData<Event<Integer>> getSaveError() { return saveError; }
 
-    /** Caută abonamente în Gmail folosind token-ul de acces primit de la Google. */
     public void scan(String accessToken) {
         status.setValue(Status.LOADING);
         gmailRepository.findSubscriptions(accessToken, new GmailRepository.Callback() {
@@ -81,10 +74,6 @@ public class GmailImportViewModel extends AndroidViewModel {
         });
     }
 
-    /**
-     * Scoate din propuneri abonamentele care sunt deja în lista utilizatorului
-     * (comparate după nume), ca un al doilea import să nu creeze dubluri.
-     */
     private void removeExisting(List<DetectedSubscription> found) {
         subscriptionRepository.getAllOnce(existing -> {
             Set<String> existingNames = new HashSet<>();
@@ -109,12 +98,10 @@ public class GmailImportViewModel extends AndroidViewModel {
         });
     }
 
-    /** Utilizatorul nu a acordat accesul sau Google a refuzat cererea. */
     public void onAuthorizationFailed() {
         showMessage(getApplication().getString(R.string.gmail_error_auth));
     }
 
-    /** Apelat de listă după ce o bifă a fost schimbată. */
     public void refreshSelectedCount() {
         int count = 0;
         for (DetectedSubscription item : currentItems()) {
@@ -125,7 +112,6 @@ public class GmailImportViewModel extends AndroidViewModel {
         selectedCount.setValue(count);
     }
 
-    /** Salvează în Firestore abonamentele bifate. */
     public void importSelected() {
         List<Subscription> toSave = new ArrayList<>();
         for (DetectedSubscription item : currentItems()) {

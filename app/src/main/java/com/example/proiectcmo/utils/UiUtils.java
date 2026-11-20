@@ -27,18 +27,10 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Locale;
 
-/**
- * Funcții ajutătoare pentru interfață, folosite de mai multe activități.
- */
 public final class UiUtils {
-
     private UiUtils() {
     }
 
-    /**
-     * Adaugă padding pentru bara de status, bara de navigare și tastatură,
-     * ca interfața să nu fie acoperită când aplicația rulează edge-to-edge.
-     */
     public static void applySystemBarsPadding(View root) {
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(
@@ -48,9 +40,6 @@ public final class UiUtils {
         });
     }
 
-    /**
-     * Șterge mesajul de eroare al unui câmp imediat ce utilizatorul începe să scrie în el.
-     */
     public static void clearErrorOnType(TextInputLayout layout) {
         if (layout.getEditText() == null) {
             return;
@@ -64,7 +53,7 @@ public final class UiUtils {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (layout.getError() != null) {
                     layout.setError(null);
-                    // eliberează și spațiul rezervat mesajului (setError îl reactivează la nevoie)
+
                     layout.setErrorEnabled(false);
                 }
             }
@@ -75,15 +64,10 @@ public final class UiUtils {
         });
     }
 
-    /** @return textul introdus în câmp, sau "" dacă acesta nu are EditText. */
     public static String textOf(TextInputLayout layout) {
         return layout.getEditText() == null ? "" : layout.getEditText().getText().toString();
     }
 
-    /**
-     * Afișează un text de forma „Nu ai cont? Înregistrează-te”, unde a doua parte
-     * apare îngroșată și în culoarea principală, ca un link.
-     */
     public static void setLinkText(TextView view, @StringRes int prefixRes, @StringRes int linkRes) {
         Context context = view.getContext();
         SpannableStringBuilder text = new SpannableStringBuilder(context.getString(prefixRes));
@@ -97,11 +81,6 @@ public final class UiUtils {
         view.setText(text);
     }
 
-    /**
-     * Alege forma de plural după regulile limbii române („2 zile”, dar „20 de zile”),
-     * chiar dacă telefonul este setat pe altă limbă. Fără asta, pe un telefon în engleză
-     * Android ar aplica regulile englezei și ar afișa „6 de zile”.
-     */
     public static String quantityString(Context context, @PluralsRes int pluralRes,
                                         int count, Object... args) {
         Configuration config = new Configuration(context.getResources().getConfiguration());
@@ -110,12 +89,10 @@ public final class UiUtils {
                 .getQuantityString(pluralRes, count, args);
     }
 
-    /** Convertește dp în pixeli, pentru dimensiuni setate din cod. */
     public static int dp(Context context, float dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    /** Prima literă a numelui, pentru avatarul colorat (ex. „Netflix” → „N”). */
     public static String initialOf(String name) {
         if (name == null || name.trim().isEmpty()) {
             return "?";
@@ -123,7 +100,6 @@ public final class UiUtils {
         return name.trim().substring(0, 1).toUpperCase();
     }
 
-    /** Colorează fundalul unui view (avatar, badge) păstrând forma din drawable. */
     public static void tintBackground(View view, @ColorRes int colorRes) {
         ViewCompat.setBackgroundTintList(view,
                 ColorStateList.valueOf(ContextCompat.getColor(view.getContext(), colorRes)));

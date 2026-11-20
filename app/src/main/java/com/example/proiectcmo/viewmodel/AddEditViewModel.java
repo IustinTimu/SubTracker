@@ -18,34 +18,21 @@ import com.example.proiectcmo.utils.ValidationUtils;
 
 import java.util.Calendar;
 
-/**
- * Logica ecranului „Adaugă / Editează abonament” (05).
- *
- * În modul editare încarcă abonamentul din Firestore; în modul adăugare poate porni
- * de la un serviciu din catalog. Validează câmpurile și salvează prin {@link SubscriptionRepository}.
- */
 public class AddEditViewModel extends ViewModel {
-
     private final SubscriptionRepository repository = new SubscriptionRepository();
 
-    /**
-     * Valorile inițiale ale formularului (abonamentul editat sau precompletat din catalog).
-     * Învelite în Event ca formularul să fie completat o singură dată – după rotirea ecranului
-     * câmpurile își păstrează singure ce a scris utilizatorul.
-     */
     private final MutableLiveData<Event<Subscription>> initial = new MutableLiveData<>();
-    /** Data aleasă în calendar; păstrată aici ca să nu se piardă la rotirea ecranului. */
+
     private final MutableLiveData<Long> selectedDate = new MutableLiveData<>();
     private final MutableLiveData<SubscriptionFormState> formState = new MutableLiveData<>();
     private final MutableLiveData<Boolean> saving = new MutableLiveData<>(false);
     private final MutableLiveData<Event<Boolean>> saved = new MutableLiveData<>();
     private final MutableLiveData<Event<Integer>> errors = new MutableLiveData<>();
 
-    /** Id-ul abonamentului editat (null = abonament nou). */
     @Nullable private String editingId;
-    /** Abonamentul încărcat la editare; de la el păstrăm sursa și starea „anulat”. */
+
     @Nullable private Subscription original;
-    /** Sursa unui abonament nou: din catalog sau completat manual. */
+
     private String newSource = Subscription.SOURCE_MANUAL;
     private boolean initialized;
 
@@ -63,11 +50,6 @@ public class AddEditViewModel extends ViewModel {
 
     public boolean isEditing() { return editingId != null; }
 
-    /**
-     * Pregătește formularul o singură dată (nu și după rotirea ecranului).
-     * @param subscriptionId id-ul pentru editare sau null
-     * @param catalogItem serviciul ales din catalog sau null (abonament personalizat)
-     */
     public void init(@Nullable String subscriptionId, @Nullable CatalogItem catalogItem) {
         if (initialized) {
             return;
@@ -101,7 +83,6 @@ public class AddEditViewModel extends ViewModel {
         selectedDate.setValue(millis);
     }
 
-    /** Validează datele și salvează abonamentul în Firestore. */
     public void save(String name, String priceText, String currency, boolean yearly,
                      Category category, boolean notify, String cancelUrl) {
         name = name.trim();
@@ -123,7 +104,7 @@ public class AddEditViewModel extends ViewModel {
         subscription.setId(editingId);
         subscription.setNotifyBeforePayment(notify);
         subscription.setCancelUrl(cancelUrl.trim().isEmpty() ? null : cancelUrl.trim());
-        // La editare se păstrează de unde a venit abonamentul și dacă a fost anulat.
+
         subscription.setSource(original != null ? original.getSource() : newSource);
         subscription.setCancelled(original != null && original.isCancelled());
 
@@ -143,13 +124,11 @@ public class AddEditViewModel extends ViewModel {
         });
     }
 
-    /** @return abonamentul editat, după ce s-a încărcat; null pentru unul nou. */
     @Nullable
     public Subscription getOriginal() {
         return original;
     }
 
-    /** Marchează abonamentul editat ca anulat sau îl reactivează, apoi închide ecranul. */
     public void setCancelled(boolean cancelled) {
         if (original == null) {
             return;
@@ -170,7 +149,6 @@ public class AddEditViewModel extends ViewModel {
         });
     }
 
-    /** Pentru un serviciu din catalog propunem prima plată peste o lună / un an de azi. */
     private static long defaultNextPayment(String cycle) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(DateUtils.startOfDay(System.currentTimeMillis()));

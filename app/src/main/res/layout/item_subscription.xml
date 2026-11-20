@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un rând din lista de abonamente: avatar colorat, nume, categorie, preț și badge cu zilele rămase. -->
+
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,14 +9,12 @@
     android:clickable="true"
     android:focusable="true"
     android:longClickable="true">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="14dp">
-
         <TextView
             android:id="@+id/avatarText"
             android:layout_width="@dimen/avatar_size"
@@ -35,7 +33,6 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:orientation="vertical">
-
             <TextView
                 android:id="@+id/nameText"
                 android:layout_width="wrap_content"
@@ -56,13 +53,11 @@
                 android:textSize="13sp"
                 tools:text="Streaming · lunar" />
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="end"
             android:orientation="vertical">
-
             <TextView
                 android:id="@+id/priceText"
                 android:layout_width="wrap_content"

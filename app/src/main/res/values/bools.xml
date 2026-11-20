@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Iconițe închise la culoare în bara de status pe fundal deschis -->
     <bool name="light_system_bars">true</bool>
 </resources>

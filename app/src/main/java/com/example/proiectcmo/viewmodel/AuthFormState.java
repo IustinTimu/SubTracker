@@ -3,12 +3,7 @@ package com.example.proiectcmo.viewmodel;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-/**
- * Erorile de validare pentru fiecare câmp al formularului.
- * O valoare null înseamnă că acel câmp este valid.
- */
 public final class AuthFormState {
-
     @Nullable private final Integer nameError;
     @Nullable private final Integer emailError;
     @Nullable private final Integer passwordError;
@@ -24,7 +19,6 @@ public final class AuthFormState {
         this.confirmPasswordError = confirmPasswordError;
     }
 
-    /** @return true dacă toate câmpurile sunt valide. */
     public boolean isValid() {
         return nameError == null && emailError == null
                 && passwordError == null && confirmPasswordError == null;

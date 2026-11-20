@@ -17,13 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Logica ecranului Statistici (06): totalul pe lună / an și împărțirea pe categorii
- * pentru graficul donut. Totul se recalculează automat când se schimbă datele din Firestore.
- */
 public class StatisticsViewModel extends ViewModel {
-
-    /** Rezultatul calculelor, afișat de activitate. */
     public static final class Statistics {
         private final double monthlyTotal;
         private final List<CategoryStat> categories;
@@ -40,7 +34,6 @@ public class StatisticsViewModel extends ViewModel {
 
         public double getYearlyTotal() { return monthlyTotal * 12; }
 
-        /** Categoriile cu cheltuieli, de la cea mai mare la cea mai mică. */
         public List<CategoryStat> getCategories() { return categories; }
 
         @Nullable
@@ -54,7 +47,6 @@ public class StatisticsViewModel extends ViewModel {
         return statistics;
     }
 
-    /** Adună costurile lunare (în lei) pe fiecare categorie și calculează procentele. */
     static Statistics compute(List<Subscription> subscriptions) {
         Map<Category, Double> sums = new EnumMap<>(Category.class);
         double total = 0;

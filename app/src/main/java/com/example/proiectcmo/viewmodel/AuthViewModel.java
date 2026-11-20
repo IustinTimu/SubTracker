@@ -9,26 +9,16 @@ import com.example.proiectcmo.repository.AuthRepository;
 import com.example.proiectcmo.utils.ValidationUtils;
 import com.google.firebase.auth.FirebaseUser;
 
-/**
- * Logica ecranelor de autentificare și înregistrare.
- *
- * Validează datele introduse, apelează {@link AuthRepository} și publică rezultatul
- * prin LiveData. Activitățile doar observă aceste stări și actualizează interfața.
- * ViewModel-ul supraviețuiește rotirii ecranului, deci o cerere în curs nu se pierde.
- */
 public class AuthViewModel extends ViewModel {
-
     private final AuthRepository repository = new AuthRepository();
 
     private final MutableLiveData<AuthFormState> formState = new MutableLiveData<>();
     private final MutableLiveData<AuthUiState> uiState = new MutableLiveData<>();
 
-    /** Erorile de validare ale câmpurilor. */
     public LiveData<AuthFormState> getFormState() {
         return formState;
     }
 
-    /** Starea cererii trimise către Firebase (loading / succes / eroare). */
     public LiveData<AuthUiState> getUiState() {
         return uiState;
     }
@@ -41,7 +31,6 @@ public class AuthViewModel extends ViewModel {
         return repository.getCurrentUser();
     }
 
-    /** Validează câmpurile și, dacă sunt corecte, încearcă autentificarea. */
     public void login(String email, String password) {
         email = email.trim();
         Integer emailError = validateEmail(email);
@@ -58,18 +47,15 @@ public class AuthViewModel extends ViewModel {
         repository.login(email, password, callback(AuthUiState.success()));
     }
 
-    /** Pornește autentificarea Firebase cu token-ul primit de la Google. */
     public void loginWithGoogle(String idToken) {
         uiState.setValue(AuthUiState.loading());
         repository.loginWithGoogle(idToken, callback(AuthUiState.success()));
     }
 
-    /** Fereastra Google s-a închis cu o eroare (nu și când utilizatorul a renunțat). */
     public void onGoogleSignInFailed(int messageRes) {
         uiState.setValue(AuthUiState.error(messageRes));
     }
 
-    /** Validează câmpurile și, dacă sunt corecte, creează contul. */
     public void register(String name, String email, String password, String confirmPassword) {
         name = name.trim();
         email = email.trim();
@@ -90,7 +76,6 @@ public class AuthViewModel extends ViewModel {
         repository.register(name, email, password, callback(AuthUiState.success()));
     }
 
-    /** Trimite emailul de resetare a parolei, dacă adresa introdusă este validă. */
     public void resetPassword(String email) {
         email = email.trim();
         Integer emailError = validateEmail(email);
@@ -121,7 +106,6 @@ public class AuthViewModel extends ViewModel {
         return ValidationUtils.isValidPassword(password) ? null : R.string.error_password_short;
     }
 
-    /** Creează un callback care publică starea dată la succes sau o eroare la eșec. */
     private AuthRepository.Callback callback(AuthUiState onSuccessState) {
         return new AuthRepository.Callback() {
             @Override

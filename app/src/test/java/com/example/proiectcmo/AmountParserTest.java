@@ -10,9 +10,7 @@ import org.junit.Test;
 
 import java.util.Calendar;
 
-/** Teste pentru extragerea sumelor din emailuri și pentru data următoarei plăți. */
 public class AmountParserTest {
-
     private static void assertAmount(String text, double amount, String currency) {
         AmountParser.Result result = AmountParser.parse(text);
         assertEquals(amount, result.amount, 0.001);
@@ -76,7 +74,7 @@ public class AmountParserTest {
         startOfToday.set(Calendar.MINUTE, 0);
         startOfToday.set(Calendar.SECOND, 0);
         startOfToday.set(Calendar.MILLISECOND, 0);
-        // nu e în trecut, dar nici mai departe de o lună
+
         assertEquals(true, upcoming >= startOfToday.getTimeInMillis());
         startOfToday.add(Calendar.MONTH, 1);
         assertEquals(true, upcoming <= startOfToday.getTimeInMillis());

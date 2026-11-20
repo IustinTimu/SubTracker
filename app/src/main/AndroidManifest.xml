@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Notificările de plată (pe Android 13+ se cere și la rulare) -->
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -15,7 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProiectCMo">
-        <!-- Primul ecran afișat la pornirea aplicației -->
         <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="true"
@@ -48,10 +46,8 @@
             android:name=".ui.gmail.GmailImportActivity"
             android:exported="false" />
 
-        <!-- Butoanele „Anulează acum” / „Păstrez” din alerta de plată -->
         <receiver
             android:name=".notifications.NotificationActionReceiver"
             android:exported="false" />
     </application>
-
 </manifest>

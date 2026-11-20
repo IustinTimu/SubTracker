@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">SubTracker</string>
-
-    <!-- Autentificare -->
     <string name="login_subtitle">Ține evidența abonamentelor tale lunare</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Parolă</string>
@@ -16,8 +14,6 @@
     <string name="placeholder_name">ex. Ana Popescu</string>
     <string name="action_back">Înapoi</string>
     <string name="reset_email_sent">Ți-am trimis pe email un link pentru resetarea parolei.</string>
-
-    <!-- Înregistrare -->
     <string name="register_title">Creează cont</string>
     <string name="register_subtitle">Completează datele de mai jos pentru a începe</string>
     <string name="hint_name">Nume și prenume</string>
@@ -26,8 +22,6 @@
     <string name="action_register">Creează cont</string>
     <string name="have_account">Ai deja cont?</string>
     <string name="login_link">Autentifică-te</string>
-
-    <!-- Erori de validare și Firebase -->
     <string name="error_name_required">Introdu numele</string>
     <string name="error_email_required">Introdu adresa de email</string>
     <string name="error_email_invalid">Adresa de email nu este validă</string>
@@ -39,12 +33,9 @@
     <string name="error_network">Nu există conexiune la internet</string>
     <string name="error_too_many_requests">Prea multe încercări. Încearcă din nou mai târziu.</string>
     <string name="error_generic">A apărut o eroare. Încearcă din nou.</string>
-
     <string name="error_save">Nu s-a putut salva. Verifică conexiunea și încearcă din nou.</string>
     <string name="error_google_sign_in">Autentificarea cu Google a eșuat.</string>
     <string name="error_google_not_configured">Login-ul cu Google nu e configurat încă în Firebase (lipsește clientul OAuth Web din google-services.json).</string>
-
-    <!-- Ecranul principal (03) -->
     <string name="greeting_user">Bună, %1$s 👋</string>
     <string name="home_title">Abonamentele mele</string>
     <string name="total_monthly">Total lunar</string>
@@ -80,8 +71,6 @@
         <item quantity="few">în %d zile</item>
         <item quantity="other">în %d de zile</item>
     </plurals>
-
-    <!-- Meniul contextual (04) -->
     <string name="action_edit">Editează</string>
     <string name="action_mark_paid">Marchează ca plătit</string>
     <string name="action_delete">Șterge</string>
@@ -90,8 +79,6 @@
     <string name="subscription_deleted">Abonamentul a fost șters</string>
     <string name="action_undo">Anulează</string>
     <string name="marked_paid">Plata a fost înregistrată. Următoarea scadență a fost mutată.</string>
-
-    <!-- Adaugă / editează (05) -->
     <string name="add_title">Abonament nou</string>
     <string name="edit_title">Editează abonamentul</string>
     <string name="label_name">Nume</string>
@@ -113,16 +100,12 @@
     <string name="error_date">Alege data următoarei plăți</string>
     <string name="date_picker_title">Data următoarei plăți</string>
     <string name="notifications_denied">Fără permisiune, nu îți putem trimite notificări de plată.</string>
-
-    <!-- Categorii -->
     <string name="category_streaming">Streaming</string>
     <string name="category_music">Muzică</string>
     <string name="category_software">Software</string>
     <string name="category_sport">Sport</string>
     <string name="category_cloud">Cloud</string>
     <string name="category_other">Altele</string>
-
-    <!-- Catalog -->
     <string name="catalog_title">Adaugă abonament</string>
     <string name="catalog_subtitle">Alege un serviciu popular sau creează unul personalizat</string>
     <string name="catalog_search_hint">Caută un serviciu</string>
@@ -130,8 +113,6 @@
     <string name="catalog_custom_subtitle">Completezi tu detaliile</string>
     <string name="catalog_price_monthly">%1$s / lună</string>
     <string name="catalog_price_yearly">%1$s / an</string>
-
-    <!-- Statistici (06) -->
     <string name="statistics_title">Statistici</string>
     <string name="per_month">Pe lună</string>
     <string name="per_year">Pe an</string>
@@ -142,8 +123,6 @@
     <string name="most_expensive">Cel mai scump abonament</string>
     <string name="most_expensive_value">%1$s · %2$s / lună</string>
     <string name="amount_lei">%1$s lei</string>
-
-    <!-- Import Gmail -->
     <string name="gmail_title">Import din Gmail</string>
     <string name="gmail_intro_title">Găsește abonamentele din email</string>
     <string name="gmail_intro_text">Căutăm în Gmail chitanțele și facturile din ultimul an de la serviciile din catalog (Netflix, Spotify etc.) și îți propunem abonamentele găsite.</string>
@@ -160,8 +139,6 @@
     <string name="gmail_error_api">Eroare la citirea Gmail (%1$s). Verifică dacă Gmail API este activat în Google Cloud.</string>
     <string name="gmail_item_meta">%1$s · ultimul email %2$s</string>
     <string name="gmail_try_again">Încearcă din nou</string>
-
-    <!-- Notificări -->
     <string name="notification_channel_name">Alerte de plată</string>
     <string name="notification_channel_description">Te avertizează cu o zi înainte ca un abonament să îți ia bani</string>
     <string name="notification_payment_title">Mâine plătești %1$s</string>
@@ -172,8 +149,6 @@
     <string name="action_cancel">Anulează</string>
     <string name="logout_title">Deconectare</string>
     <string name="logout_message">Sigur vrei să te deconectezi?</string>
-
-    <!-- Anularea abonamentelor -->
     <string name="label_cancel_url">Link de anulare (opțional)</string>
     <string name="placeholder_cancel_url">ex. netflix.com/cancelplan</string>
     <string name="cancel_card_title">Anulare</string>

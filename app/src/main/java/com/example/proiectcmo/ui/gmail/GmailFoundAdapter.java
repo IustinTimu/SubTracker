@@ -19,10 +19,7 @@ import com.example.proiectcmo.utils.UiUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Lista „Abonamente găsite”: fiecare rând poate fi bifat sau debifat. */
 public class GmailFoundAdapter extends RecyclerView.Adapter<GmailFoundAdapter.ViewHolder> {
-
-    /** Anunță ecranul că s-a schimbat o bifă, ca să actualizeze butonul de import. */
     public interface Listener {
         void onSelectionChanged();
     }

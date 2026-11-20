@@ -23,43 +23,29 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Singurul loc din aplicație care comunică cu Firebase Authentication.
- * Activitățile nu folosesc Firebase direct, ci trec prin ViewModel → Repository
- * (separarea logicii de interfață).
- */
 public class AuthRepository {
-
     private static final String TAG = "AuthRepository";
     private static final String USERS_COLLECTION = "users";
 
-    /** Rezultatul unei operații asincrone (login, înregistrare etc.). */
     public interface Callback {
         void onSuccess();
 
-        /** @param messageRes id-ul mesajului de eroare din strings.xml */
         void onError(@StringRes int messageRes);
     }
 
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
-    /** @return utilizatorul autentificat sau null dacă nu e nimeni logat. */
     public FirebaseUser getCurrentUser() {
         return auth.getCurrentUser();
     }
 
-    /** Autentificare cu email și parolă. */
     public void login(String email, String password, Callback callback) {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(result -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onError(mapError(e)));
     }
 
-    /**
-     * Creează un cont nou, îi setează numele afișat și salvează profilul
-     * utilizatorului în Firestore (users/{uid}).
-     */
     public void register(String name, String email, String password, Callback callback) {
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener(result -> {
@@ -74,11 +60,6 @@ public class AuthRepository {
                 .addOnFailureListener(e -> callback.onError(mapError(e)));
     }
 
-    /**
-     * Autentificare cu un cont Google.
-     * Primește token-ul obținut de Credential Manager și îl schimbă pe o sesiune Firebase.
-     * La prima autentificare, Firebase creează automat contul.
-     */
     public void loginWithGoogle(String idToken, Callback callback) {
         auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null))
                 .addOnSuccessListener(result -> {
@@ -91,22 +72,16 @@ public class AuthRepository {
                 .addOnFailureListener(e -> callback.onError(mapError(e)));
     }
 
-    /** Trimite pe email un link pentru resetarea parolei. */
     public void sendPasswordReset(String email, Callback callback) {
         auth.sendPasswordResetEmail(email)
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onError(mapError(e)));
     }
 
-    /** Deconectează utilizatorul curent. */
     public void logout() {
         auth.signOut();
     }
 
-    /**
-     * Salvează numele în profilul Firebase și un document cu datele utilizatorului în Firestore.
-     * Dacă una dintre operații eșuează, contul rămâne creat; eroarea doar se scrie în Logcat.
-     */
     private void saveProfile(@NonNull FirebaseUser user, String name) {
         UserProfileChangeRequest profile = new UserProfileChangeRequest.Builder()
                 .setDisplayName(name)
@@ -123,10 +98,6 @@ public class AuthRepository {
                 .addOnFailureListener(e -> Log.w(TAG, "Nu s-a putut salva profilul", e));
     }
 
-    /**
-     * Salvează în Firestore numele și emailul venite din contul Google.
-     * merge() păstrează câmpurile existente (ex. createdAt) la autentificările următoare.
-     */
     private void saveGoogleProfile(@NonNull FirebaseUser user) {
         Map<String, Object> data = new HashMap<>();
         data.put("name", user.getDisplayName());
@@ -136,11 +107,10 @@ public class AuthRepository {
                 .addOnFailureListener(e -> Log.w(TAG, "Nu s-a putut salva profilul", e));
     }
 
-    /** Transformă excepțiile Firebase în mesaje de eroare clare, în limba română. */
     @StringRes
     private static int mapError(Exception e) {
         Log.w(TAG, "Eroare Firebase", e);
-        // Ordinea contează: WeakPassword este o subclasă a InvalidCredentials.
+
         if (e instanceof FirebaseAuthWeakPasswordException) {
             return R.string.error_password_short;
         } else if (e instanceof FirebaseAuthUserCollisionException) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un abonament găsit în Gmail: bifă, avatar, nume, detalii și suma estimată. -->
+
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,7 +7,6 @@
     android:layout_marginVertical="5dp"
     android:clickable="true"
     android:focusable="true">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,8 +15,6 @@
         android:paddingVertical="12dp"
         android:paddingStart="6dp"
         android:paddingEnd="14dp">
-
-        <!-- Bifa nu primește atingeri: se schimbă la apăsarea pe tot rândul -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/selectedCheck"
             android:layout_width="wrap_content"
@@ -45,7 +42,6 @@
             android:layout_marginStart="12dp"
             android:layout_weight="1"
             android:orientation="vertical">
-
             <TextView
                 android:id="@+id/nameText"
                 android:layout_width="wrap_content"
@@ -66,7 +62,6 @@
                 android:textSize="13sp"
                 tools:text="Streaming · ultimul email 3 nov." />
         </LinearLayout>
-
         <TextView
             android:id="@+id/priceText"
             android:layout_width="wrap_content"

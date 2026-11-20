@@ -1,8 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!--
-        Tema aplicației (Material 3). Culorile vin din colors.xml; în dark mode Android
-        alege automat valorile din values-night/colors.xml.
-    -->
     <style name="Base.Theme.ProiectCMo" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/st_primary</item>
         <item name="colorOnPrimary">@color/st_on_primary</item>
@@ -28,8 +24,6 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">@bool/light_system_bars</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">@bool/light_system_bars</item>
-
-        <!-- Stilurile implicite ale componentelor -->
         <item name="textInputStyle">@style/Widget.SubTracker.TextField</item>
         <item name="materialButtonStyle">@style/Widget.SubTracker.Button</item>
         <item name="materialCardViewStyle">@style/Widget.SubTracker.Card</item>
@@ -37,14 +31,12 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.SubTracker.Dialog</item>
         <item name="materialCalendarTheme">@style/ThemeOverlay.SubTracker.DatePicker</item>
     </style>
-
     <style name="Theme.ProiectCMo" parent="Base.Theme.ProiectCMo" />
 
     <style name="ThemeOverlay.SubTracker.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.SubTracker.Card</item>
         <item name="colorSurface">@color/st_surface</item>
     </style>
-
     <style name="ThemeOverlay.SubTracker.DatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
         <item name="colorSurface">@color/st_surface</item>
     </style>

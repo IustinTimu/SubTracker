@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Meniul contextual afișat la apăsarea lungă pe un abonament (ecranul 04). -->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_edit"
@@ -13,7 +13,7 @@
         android:id="@+id/action_cancel_subscription"
         android:icon="@drawable/ic_close"
         android:title="@string/action_cancel_subscription" />
-    <!-- Titlul se schimbă din cod: „Marchează ca anulat” sau „Reactivează abonamentul” -->
+
     <item
         android:id="@+id/action_toggle_cancelled"
         android:icon="@drawable/ic_repeat"

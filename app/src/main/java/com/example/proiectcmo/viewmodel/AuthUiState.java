@@ -2,20 +2,14 @@ package com.example.proiectcmo.viewmodel;
 
 import androidx.annotation.StringRes;
 
-/**
- * Starea unei operații de autentificare, observată de activități prin LiveData.
- * Activitatea decide ce afișează (progress bar, mesaj, navigare) în funcție de {@link Status}.
- */
 public final class AuthUiState {
-
     public enum Status {
-        /** Cererea a fost trimisă și se așteaptă răspunsul. */
         LOADING,
-        /** Login sau înregistrare reușită. */
+
         SUCCESS,
-        /** Emailul de resetare a parolei a fost trimis. */
+
         RESET_EMAIL_SENT,
-        /** A apărut o eroare; detaliile sunt în {@link #getMessageRes()}. */
+
         ERROR
     }
 

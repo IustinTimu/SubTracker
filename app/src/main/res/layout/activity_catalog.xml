@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Catalogul de abonamente populare: căutare + grilă cu 2 coloane. -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,7 +9,6 @@
     android:background="@color/st_background"
     android:orientation="vertical"
     tools:context=".ui.catalog.CatalogActivity">
-
     <include layout="@layout/view_screen_header" />
 
     <TextView
@@ -26,7 +25,6 @@
         android:layout_marginTop="16dp"
         app:endIconMode="clear_text"
         app:startIconDrawable="@drawable/ic_search">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/searchInput"
             android:layout_width="match_parent"
@@ -35,7 +33,6 @@
             android:imeOptions="actionSearch"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/catalogGrid"
         android:layout_width="match_parent"

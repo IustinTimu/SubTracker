@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fundal rotund alb cu contur fin, pentru butoanele-iconiță din antet. -->
+
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/st_primary_container">
     <item>

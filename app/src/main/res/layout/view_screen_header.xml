@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Antet comun pentru ecranele secundare: buton „înapoi” în cerc + titlu. -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,7 +8,6 @@
     android:orientation="horizontal"
     android:paddingHorizontal="@dimen/screen_padding"
     android:paddingVertical="12dp">
-
     <ImageButton
         android:id="@+id/backButton"
         style="@style/Widget.SubTracker.IconButton"

@@ -18,11 +18,7 @@ import com.example.proiectcmo.utils.MoneyUtils;
 import com.example.proiectcmo.utils.UiUtils;
 import com.example.proiectcmo.viewmodel.StatisticsViewModel;
 
-/**
- * Ecranul 06 – Statistici: totalul pe lună / an, graficul donut pe categorii și legenda.
- */
 public class StatisticsActivity extends AppCompatActivity {
-
     private TextView monthlyText;
     private TextView yearlyText;
     private DonutChartView donut;
@@ -76,7 +72,6 @@ public class StatisticsActivity extends AppCompatActivity {
         }
     }
 
-    /** Câte un rând pentru fiecare categorie: punct colorat, nume, sumă și procent. */
     private void renderLegend(StatisticsViewModel.Statistics stats) {
         legend.removeAllViews();
         LayoutInflater inflater = getLayoutInflater();

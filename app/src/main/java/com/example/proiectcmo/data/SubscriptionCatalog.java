@@ -21,12 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Catalogul de abonamente populare, citit o singură dată din {@code assets/catalog.json}
- * și păstrat în memorie (Singleton). Folosit de ecranul „Adaugă abonament” și de importul din Gmail.
- */
 public final class SubscriptionCatalog {
-
     private static final String TAG = "SubscriptionCatalog";
     private static final String FILE_NAME = "catalog.json";
 
@@ -38,7 +33,6 @@ public final class SubscriptionCatalog {
         this.items = Collections.unmodifiableList(items);
     }
 
-    /** Întoarce catalogul, încărcându-l la primul apel. */
     public static synchronized SubscriptionCatalog getInstance(@NonNull Context context) {
         if (instance == null) {
             instance = new SubscriptionCatalog(load(context.getApplicationContext()));
@@ -50,7 +44,6 @@ public final class SubscriptionCatalog {
         return items;
     }
 
-    /** Caută un serviciu după nume (fără să țină cont de litere mari/mici). */
     @Nullable
     public CatalogItem findByName(String name) {
         for (CatalogItem item : items) {

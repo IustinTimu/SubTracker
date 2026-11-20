@@ -3,11 +3,7 @@ package com.example.proiectcmo.viewmodel;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-/**
- * Erorile de validare ale formularului de abonament. Null = câmpul este valid.
- */
 public final class SubscriptionFormState {
-
     @Nullable private final Integer nameError;
     @Nullable private final Integer priceError;
     @Nullable private final Integer dateError;

@@ -20,21 +20,14 @@ import com.example.proiectcmo.ui.edit.AddEditSubscriptionActivity;
 import com.example.proiectcmo.ui.main.MainActivity;
 import com.example.proiectcmo.utils.CancelLinks;
 
-/**
- * Creează canalul „Alerte de plată” și afișează alerta din ziua dinaintea unei plăți.
- * Pe Android 8+ fiecare notificare aparține unui canal, pe care utilizatorul îl poate
- * dezactiva din setări.
- */
 public final class NotificationHelper {
-
     public static final String CHANNEL_PAYMENT_ALERTS = "payment_alerts";
-    /** Canalul folosit de versiunile anterioare ale aplicației; îl ștergem ca să nu apară dublat. */
+
     private static final String OLD_CHANNEL = "payments";
 
     private NotificationHelper() {
     }
 
-    /** Creează canalul cu prioritate ridicată (alerta apare și peste ecran). */
     public static void createChannel(Context context) {
         NotificationManager manager = context.getSystemService(NotificationManager.class);
         manager.deleteNotificationChannel(OLD_CHANNEL);
@@ -45,7 +38,6 @@ public final class NotificationHelper {
         manager.createNotificationChannel(channel);
     }
 
-    /** @return true dacă aplicația are voie să afișeze notificări (Android 13+ cere permisiune). */
     public static boolean canNotify(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
                 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -55,16 +47,10 @@ public final class NotificationHelper {
         return NotificationManagerCompat.from(context).areNotificationsEnabled();
     }
 
-    /** Id-ul notificării unui abonament, ca alertele diferitelor abonamente să nu se suprascrie. */
     public static int notificationId(@Nullable String subscriptionId) {
         return subscriptionId == null ? 0 : subscriptionId.hashCode();
     }
 
-    /**
-     * Afișează alerta „Mâine îți va lua … pentru …”, cu două butoane:
-     * „Anulează acum” deschide pagina de anulare, iar „Păstrez” închide alerta.
-     * Atingerea notificării deschide abonamentul în aplicație.
-     */
     public static void showPaymentAlert(Context context, String subscriptionId, String name,
                                         String amount, @Nullable String cancelUrl) {
         if (!canNotify(context)) {
@@ -92,14 +78,9 @@ public final class NotificationHelper {
         try {
             NotificationManagerCompat.from(context).notify(id, builder.build());
         } catch (SecurityException e) {
-            // permisiunea a fost retrasă între verificare și afișare – nu facem nimic
         }
     }
 
-    /**
-     * Deschide ecranul abonamentului peste ecranul principal, ca butonul Înapoi să ducă
-     * în lista de abonamente, nu să închidă aplicația.
-     */
     private static PendingIntent openSubscription(Context context, String subscriptionId, int id) {
         return TaskStackBuilder.create(context)
                 .addNextIntent(new Intent(context, MainActivity.class))
@@ -107,11 +88,6 @@ public final class NotificationHelper {
                 .getPendingIntent(id, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    /**
-     * „Anulează acum”: trece prin {@link NotificationActionReceiver}, care închide alerta
-     * și deschide pagina de anulare; fără link, deschide abonamentul în aplicație, unde
-     * utilizatorul vede unde se anulează de obicei.
-     */
     private static PendingIntent cancelNow(Context context, String subscriptionId,
                                            @Nullable String cancelUrl, int id) {
         if (cancelUrl != null) {
@@ -125,12 +101,10 @@ public final class NotificationHelper {
                         PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    /** Folosită de butoane pentru a închide alerta după ce au fost apăsate. */
     static void dismiss(Context context, int id) {
         NotificationManagerCompat.from(context).cancel(id);
     }
 
-    /** Intentul de browser pentru link-ul de anulare (pornit din receiver). */
     static Intent browserIntent(String url) {
         return CancelLinks.browserIntent(url).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }

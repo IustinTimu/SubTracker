@@ -33,12 +33,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * Primul ecran al aplicației: autentificare cu email și parolă sau cu un cont Google.
- * Dacă utilizatorul este deja logat, trece direct la ecranul principal.
- */
 public class LoginActivity extends AppCompatActivity {
-
     private static final String TAG = "LoginActivity";
 
     private AuthViewModel viewModel;
@@ -54,7 +49,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // Utilizatorul s-a logat deja la o pornire anterioară → nu mai cerem parola.
         if (viewModel.isLoggedIn()) {
             openMainScreen();
             return;
@@ -96,13 +90,7 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RegisterActivity.class)));
     }
 
-    /**
-     * Deschide fereastra „Alege un cont” a Google prin Credential Manager.
-     * Rezultatul este un token de identitate, pe care ViewModel-ul îl trimite la Firebase.
-     */
     private void startGoogleSignIn() {
-        // Id-ul clientului web este generat din google-services.json; lipsește dacă
-        // providerul Google nu a fost activat în consola Firebase.
         int clientIdRes = getResources().getIdentifier(
                 "default_web_client_id", "string", getPackageName());
         if (clientIdRes == 0) {
@@ -126,7 +114,6 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull GetCredentialException e) {
-                        // Utilizatorul a închis fereastra → nu este o eroare.
                         if (e instanceof GetCredentialCancellationException) {
                             return;
                         }
@@ -136,7 +123,6 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    /** Extrage token-ul Google din răspuns și îl trimite mai departe. */
     private void handleGoogleCredential(Credential credential) {
         if (credential instanceof CustomCredential
                 && GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
@@ -183,7 +169,6 @@ public class LoginActivity extends AppCompatActivity {
         Snackbar.make(findViewById(R.id.main), messageRes, Snackbar.LENGTH_LONG).show();
     }
 
-    /** Deschide ecranul principal și închide login-ul, ca butonul Back să nu revină aici. */
     private void openMainScreen() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

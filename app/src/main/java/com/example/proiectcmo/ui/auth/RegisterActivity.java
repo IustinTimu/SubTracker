@@ -20,11 +20,7 @@ import com.example.proiectcmo.viewmodel.AuthViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 
-/**
- * Ecranul de creare a unui cont nou (nume, email, parolă, confirmare parolă).
- */
 public class RegisterActivity extends AppCompatActivity {
-
     private AuthViewModel viewModel;
 
     private TextInputLayout nameLayout;
@@ -69,7 +65,6 @@ public class RegisterActivity extends AppCompatActivity {
                 UiUtils.textOf(passwordLayout),
                 UiUtils.textOf(confirmPasswordLayout)));
 
-        // Utilizatorul are deja cont → revine la ecranul de login.
         TextView goToLogin = findViewById(R.id.goToLoginText);
         UiUtils.setLinkText(goToLogin, R.string.have_account, R.string.login_link);
         goToLogin.setOnClickListener(v -> finish());
