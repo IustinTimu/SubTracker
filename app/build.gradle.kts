@@ -18,6 +18,17 @@ android {
 
     }
 
+    // Cheie de test comună pentru toată echipa: oricine construiește proiectul obține
+    // aceeași amprentă SHA-1, înregistrată o singură dată în Firebase (login cu Google).
+    // Nu e o cheie secretă; aplicația publicată se semnează cu o cheie de release separată.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
     buildTypes {
         release {
             optimization {
