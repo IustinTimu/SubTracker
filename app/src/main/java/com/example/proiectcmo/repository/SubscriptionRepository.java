@@ -6,15 +6,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.proiectcmo.R;
+import com.example.proiectcmo.model.ReviewItem;
 import com.example.proiectcmo.model.Subscription;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class SubscriptionRepository {
     private static final String TAG = "SubscriptionRepository";
@@ -22,6 +30,11 @@ public class SubscriptionRepository {
     private static final String SUBSCRIPTIONS = "subscriptions";
     private static final String FIELD_NEXT_PAYMENT = "nextPaymentDate";
     private static final String FIELD_CANCELLED = "cancelled";
+    private static final String FIELD_LAST_CHARGE = "lastChargeDate";
+    private static final String FIELD_PRICE = "price";
+    private static final String FIELD_CURRENCY = "currency";
+    private static final String FIELD_CYCLE = "billingCycle";
+    private static final String FIELD_VENDOR = "vendor";
 
     public interface ListCallback {
         void onLoaded(List<Subscription> subscriptions);
@@ -63,6 +76,10 @@ public class SubscriptionRepository {
                     Log.w(TAG, "Nu s-au putut citi abonamentele", e);
                     callback.onLoaded(new ArrayList<>());
                 });
+    }
+
+    public Task<List<Subscription>> fetchAll() {
+        return collection().get().continueWith(task -> task.getResult().toObjects(Subscription.class));
     }
 
     public void save(Subscription subscription, OperationCallback callback) {
@@ -107,6 +124,84 @@ public class SubscriptionRepository {
         batch.commit()
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(e -> fail(e, callback));
+    }
+
+    public void applyReview(List<ReviewItem> selected, Map<String, Long> lastChargeSync,
+                            OperationCallback callback) {
+        CollectionReference col = collection();
+        existingIds(col).continueWithTask(task -> {
+            Set<String> ids = task.getResult();
+            WriteBatch batch = firestore.batch();
+            for (ReviewItem item : selected) {
+                if (item.kind == ReviewItem.Kind.ADD) {
+                    batch.set(col.document(), item.proposed);
+                } else if (item.kind != ReviewItem.Kind.INFO && ids.contains(item.proposed.getId())) {
+                    Map<String, Object> fields = changedFields(item);
+                    if (!fields.isEmpty()) {
+                        batch.update(col.document(item.proposed.getId()), fields);
+                    }
+                }
+            }
+            addLastCharges(batch, col, ids, lastChargeSync);
+            return batch.commit();
+        })
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> fail(e, callback));
+    }
+
+    public Task<Void> syncLastCharges(Map<String, Long> lastChargeSync) {
+        CollectionReference col = collection();
+        return existingIds(col).continueWithTask(task -> {
+            WriteBatch batch = firestore.batch();
+            addLastCharges(batch, col, task.getResult(), lastChargeSync);
+            return batch.commit();
+        });
+    }
+
+    private static Task<Set<String>> existingIds(CollectionReference col) {
+        return col.get().continueWith(task -> {
+            Set<String> ids = new HashSet<>();
+            for (DocumentSnapshot doc : task.getResult().getDocuments()) {
+                ids.add(doc.getId());
+            }
+            return ids;
+        });
+    }
+
+    private static void addLastCharges(WriteBatch batch, CollectionReference col, Set<String> ids,
+                                       Map<String, Long> lastChargeSync) {
+        for (Map.Entry<String, Long> entry : lastChargeSync.entrySet()) {
+            if (ids.contains(entry.getKey())) {
+                batch.update(col.document(entry.getKey()), FIELD_LAST_CHARGE, entry.getValue());
+            }
+        }
+    }
+
+    private static Map<String, Object> changedFields(ReviewItem item) {
+        Subscription next = item.proposed;
+        Subscription prev = item.previous;
+        Map<String, Object> fields = new HashMap<>();
+        if (item.kind == ReviewItem.Kind.DEACTIVATE || item.kind == ReviewItem.Kind.REACTIVATE) {
+            fields.put(FIELD_CANCELLED, next.isCancelled());
+        }
+        if (item.kind == ReviewItem.Kind.UPDATE || item.kind == ReviewItem.Kind.REACTIVATE) {
+            if (prev == null || Math.abs(next.getPrice() - prev.getPrice()) > 0.001) {
+                fields.put(FIELD_PRICE, next.getPrice());
+            }
+            if (prev == null || !Objects.equals(next.getCurrency(), prev.getCurrency())) {
+                fields.put(FIELD_CURRENCY, next.getCurrency());
+            }
+            if (prev == null || !Objects.equals(next.getBillingCycle(), prev.getBillingCycle())) {
+                fields.put(FIELD_CYCLE, next.getBillingCycle());
+            }
+            if (prev == null || next.getNextPaymentDate() != prev.getNextPaymentDate()) {
+                fields.put(FIELD_NEXT_PAYMENT, next.getNextPaymentDate());
+            }
+            if (prev == null || !Objects.equals(next.getVendor(), prev.getVendor())) {
+                fields.put(FIELD_VENDOR, next.getVendor());
+            }
+        }
+        return fields;
     }
 
     private static void fail(Exception e, OperationCallback callback) {
