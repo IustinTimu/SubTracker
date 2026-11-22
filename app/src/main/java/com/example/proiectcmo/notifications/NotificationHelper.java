@@ -17,11 +17,16 @@ import androidx.core.content.ContextCompat;
 
 import com.example.proiectcmo.R;
 import com.example.proiectcmo.ui.edit.AddEditSubscriptionActivity;
+import com.example.proiectcmo.ui.gmail.GmailImportActivity;
 import com.example.proiectcmo.ui.main.MainActivity;
 import com.example.proiectcmo.utils.CancelLinks;
+import com.example.proiectcmo.utils.UiUtils;
 
 public final class NotificationHelper {
     public static final String CHANNEL_PAYMENT_ALERTS = "payment_alerts";
+    public static final String CHANNEL_IMPORT = "import_found";
+
+    private static final int IMPORT_NOTIFICATION_ID = CHANNEL_IMPORT.hashCode();
 
     private static final String OLD_CHANNEL = "payments";
 
@@ -36,6 +41,9 @@ public final class NotificationHelper {
                 NotificationManager.IMPORTANCE_HIGH);
         channel.setDescription(context.getString(R.string.notification_channel_description));
         manager.createNotificationChannel(channel);
+        manager.createNotificationChannel(new NotificationChannel(CHANNEL_IMPORT,
+                context.getString(R.string.notification_import_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT));
     }
 
     public static boolean canNotify(Context context) {
@@ -79,6 +87,53 @@ public final class NotificationHelper {
             NotificationManagerCompat.from(context).notify(id, builder.build());
         } catch (SecurityException e) {
         }
+    }
+
+    public static void cancelImportFound(Context context) {
+        NotificationManagerCompat.from(context).cancel(IMPORT_NOTIFICATION_ID);
+    }
+
+    public static void showImportFound(Context context, int newCount, int inactiveCount) {
+        if (!canNotify(context)) {
+            return;
+        }
+        createChannel(context);
+        String text = importFoundText(context, newCount, inactiveCount);
+        PendingIntent open = TaskStackBuilder.create(context)
+                .addNextIntent(new Intent(context, MainActivity.class))
+                .addNextIntent(new Intent(context, GmailImportActivity.class)
+                        .putExtra(GmailImportActivity.EXTRA_OPEN_PENDING, true))
+                .getPendingIntent(IMPORT_NOTIFICATION_ID,
+                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(context, CHANNEL_IMPORT)
+                        .setSmallIcon(R.drawable.ic_mail)
+                        .setColor(ContextCompat.getColor(context, R.color.st_primary))
+                        .setContentTitle(context.getString(R.string.notification_import_title))
+                        .setContentText(text)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
+                        .setContentIntent(open)
+                        .setAutoCancel(true);
+        try {
+            NotificationManagerCompat.from(context).notify(IMPORT_NOTIFICATION_ID, builder.build());
+        } catch (SecurityException e) {
+        }
+    }
+
+    public static String importFoundText(Context context, int newCount, int inactiveCount) {
+        String added = UiUtils.quantityString(context, R.plurals.import_found_new, newCount, newCount);
+        if (newCount > 0 && inactiveCount > 0) {
+            return context.getString(R.string.import_found_both, added, UiUtils.quantityString(
+                    context, R.plurals.import_found_inactive_short, inactiveCount, inactiveCount));
+        }
+        if (newCount > 0) {
+            return context.getString(R.string.import_found_one, added);
+        }
+        if (inactiveCount > 0) {
+            return context.getString(R.string.import_found_one, UiUtils.quantityString(
+                    context, R.plurals.import_found_inactive, inactiveCount, inactiveCount));
+        }
+        return context.getString(R.string.import_found_changes);
     }
 
     private static PendingIntent openSubscription(Context context, String subscriptionId, int id) {
