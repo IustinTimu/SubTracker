@@ -39,7 +39,27 @@ public class Subscription {
 
     private boolean cancelled;
 
+    private String vendor;
+
+    private long lastChargeDate;
+
     public Subscription() {
+    }
+
+    public Subscription(Subscription other) {
+        this.id = other.id;
+        this.name = other.name;
+        this.price = other.price;
+        this.currency = other.currency;
+        this.billingCycle = other.billingCycle;
+        this.nextPaymentDate = other.nextPaymentDate;
+        this.category = other.category;
+        this.notifyBeforePayment = other.notifyBeforePayment;
+        this.cancelUrl = other.cancelUrl;
+        this.source = other.source;
+        this.cancelled = other.cancelled;
+        this.vendor = other.vendor;
+        this.lastChargeDate = other.lastChargeDate;
     }
 
     public Subscription(String name, double price, String currency,
@@ -118,6 +138,12 @@ public class Subscription {
 
     public boolean isCancelled() { return cancelled; }
     public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
+
+    public String getVendor() { return vendor; }
+    public void setVendor(String vendor) { this.vendor = vendor; }
+
+    public long getLastChargeDate() { return lastChargeDate; }
+    public void setLastChargeDate(long lastChargeDate) { this.lastChargeDate = lastChargeDate; }
 
     public boolean isNotifyBeforePayment() { return notifyBeforePayment; }
     public void setNotifyBeforePayment(boolean notifyBeforePayment) {
