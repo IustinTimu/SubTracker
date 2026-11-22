@@ -19,8 +19,11 @@ import androidx.core.view.WindowCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.WorkManager;
 
 import com.example.proiectcmo.R;
+import com.example.proiectcmo.importer.AutoImportScheduler;
+import com.example.proiectcmo.model.ImportReview;
 import com.example.proiectcmo.model.Subscription;
 import com.example.proiectcmo.notifications.NotificationHelper;
 import com.example.proiectcmo.notifications.PaymentReminderScheduler;
@@ -61,6 +64,9 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
     private TextView totalAmountText;
     private TextView activeSummaryText;
     private TextView nextPaymentPill;
+    private View pendingBanner;
+    private TextView pendingBannerText;
+    private View reconnectBanner;
 
     private final ActivityResultLauncher<String> notificationPermission =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -117,6 +123,15 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
         activeSummaryText = findViewById(R.id.activeSummaryText);
         nextPaymentPill = findViewById(R.id.nextPaymentPill);
 
+        pendingBanner = findViewById(R.id.pendingBanner);
+        pendingBannerText = findViewById(R.id.pendingBannerText);
+        reconnectBanner = findViewById(R.id.reconnectBanner);
+        findViewById(R.id.pendingBannerButton).setOnClickListener(v ->
+                startActivity(new Intent(this, GmailImportActivity.class)
+                        .putExtra(GmailImportActivity.EXTRA_OPEN_PENDING, true)));
+        findViewById(R.id.reconnectBannerButton).setOnClickListener(v ->
+                startActivity(new Intent(this, GmailImportActivity.class)));
+
         findViewById(R.id.addFab).setOnClickListener(v ->
                 startActivity(new Intent(this, CatalogActivity.class)));
     }
@@ -135,7 +150,8 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
             }
             int id = checkedIds.get(0);
             homeViewModel.setFilter(id == R.id.chipMonthly ? BillingFilter.MONTHLY
-                    : id == R.id.chipYearly ? BillingFilter.YEARLY : BillingFilter.ALL);
+                    : id == R.id.chipYearly ? BillingFilter.YEARLY
+                    : id == R.id.chipInactive ? BillingFilter.INACTIVE : BillingFilter.ALL);
         });
 
         View sortButton = findViewById(R.id.sortButton);
@@ -168,6 +184,9 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
                 showMessage(messageRes);
             }
         });
+        homeViewModel.getPendingReview().observe(this, this::renderPendingBanner);
+        homeViewModel.getNeedsReconnect().observe(this, needs ->
+                reconnectBanner.setVisibility(Boolean.TRUE.equals(needs) ? View.VISIBLE : View.GONE));
         homeViewModel.getMessages().observe(this, event -> {
             Integer message = event.getIfNotHandled();
             if (message != null) {
@@ -186,6 +205,15 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
             boolean filtered = homeViewModel.getFilter().getValue() != BillingFilter.ALL;
             emptyTitle.setText(filtered ? R.string.empty_filter : R.string.empty_subscriptions);
             emptyHint.setVisibility(filtered ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private void renderPendingBanner(ImportReview pending) {
+        boolean visible = pending != null && !pending.isEmpty();
+        pendingBanner.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (visible) {
+            pendingBannerText.setText(NotificationHelper.importFoundText(this,
+                    pending.newItems.size(), pending.inactive.size()));
         }
     }
 
@@ -244,6 +272,11 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
     @Override
     protected void onResume() {
         super.onResume();
+        if (homeViewModel == null) {
+            return;
+        }
+        AutoImportScheduler.maybeSchedule(this);
+        homeViewModel.refreshSyncState();
         if (pendingCancelConfirmation != null) {
             Subscription subscription = pendingCancelConfirmation;
             pendingCancelConfirmation = null;
@@ -309,6 +342,8 @@ public class MainActivity extends AppCompatActivity implements SubscriptionAdapt
                 .setNegativeButton(R.string.action_cancel, null)
                 .setPositiveButton(R.string.action_logout, (dialog, which) -> {
                     PaymentReminderScheduler.cancelAll(this);
+                    WorkManager.getInstance(this).cancelUniqueWork(AutoImportScheduler.WORK_NAME);
+                    NotificationHelper.cancelImportFound(this);
                     authViewModel.logout();
                     openLoginScreen();
                 })

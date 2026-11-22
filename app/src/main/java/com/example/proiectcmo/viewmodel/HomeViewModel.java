@@ -10,8 +10,10 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.proiectcmo.R;
+import com.example.proiectcmo.model.ImportReview;
 import com.example.proiectcmo.model.Subscription;
 import com.example.proiectcmo.notifications.PaymentReminderScheduler;
+import com.example.proiectcmo.repository.ImportStateRepository;
 import com.example.proiectcmo.repository.OperationCallback;
 import com.example.proiectcmo.repository.SubscriptionRepository;
 import com.example.proiectcmo.repository.SubscriptionsLiveData;
@@ -32,6 +34,10 @@ public class HomeViewModel extends AndroidViewModel {
     private final MediatorLiveData<List<Subscription>> visible = new MediatorLiveData<>();
     private final MediatorLiveData<HomeSummary> summary = new MediatorLiveData<>();
     private final MutableLiveData<Event<Integer>> messages = new MutableLiveData<>();
+
+    private final ImportStateRepository importState = new ImportStateRepository();
+    private final LiveData<ImportReview> pendingReview = importState.observePendingReview();
+    private final MutableLiveData<Boolean> needsReconnect = new MutableLiveData<>(false);
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -56,6 +62,14 @@ public class HomeViewModel extends AndroidViewModel {
     public LiveData<Event<Integer>> getLoadErrors() { return all.getErrors(); }
 
     public LiveData<BillingFilter> getFilter() { return filter; }
+
+    public LiveData<ImportReview> getPendingReview() { return pendingReview; }
+
+    public LiveData<Boolean> getNeedsReconnect() { return needsReconnect; }
+
+    public void refreshSyncState() {
+        importState.getSync().addOnSuccessListener(sync -> needsReconnect.setValue(sync.needsReconnect));
+    }
 
     public LiveData<SortOrder> getSortOrder() { return sortOrder; }
 

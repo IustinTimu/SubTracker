@@ -114,6 +114,78 @@
                     tools:text="Următoarea plată: Netflix · mâine" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/pendingBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/st_primary_container"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="4dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp">
+                <TextView
+                    android:id="@+id/pendingBannerText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="Am găsit 1 abonament nou și 1 inactiv"
+                    android:textColor="@color/st_on_primary_container"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/pendingBannerButton"
+                    style="@style/Widget.SubTracker.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/banner_check"
+                    android:textColor="@color/st_on_primary_container" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/reconnectBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/st_accent_container"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="4dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp">
+                <TextView
+                    android:id="@+id/reconnectBannerText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/banner_reconnect_text"
+                    android:textColor="@color/st_on_accent_container"
+                    android:textSize="14sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/reconnectBannerButton"
+                    style="@style/Widget.SubTracker.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/banner_reconnect"
+                    android:textColor="@color/st_on_accent_container" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/filterChips"
             android:layout_width="match_parent"
@@ -144,6 +216,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/filter_yearly" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipInactive"
+                style="@style/Widget.SubTracker.Chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/filter_inactive" />
         </com.google.android.material.chip.ChipGroup>
         <LinearLayout
             android:layout_width="match_parent"
