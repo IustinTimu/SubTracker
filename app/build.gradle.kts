@@ -33,6 +33,9 @@ android {
             }
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -55,7 +58,13 @@ dependencies {
     implementation(libs.play.services.auth)
     testImplementation(libs.junit)
 
-    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
+    testImplementation(libs.org.json)
+
+    implementation(platform(libs.firebase.bom))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-ai")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    implementation("com.google.firebase:firebase-appcheck-debug")
+    implementation(libs.guava)
 }
