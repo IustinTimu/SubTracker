@@ -1,18 +1,20 @@
 package com.example.proiectcmo.repository;
 
-import android.os.Handler;
-import android.os.Looper;
+import android.content.Context;
 import android.text.Html;
 import android.util.Base64;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
-
-import com.example.proiectcmo.data.SubscriptionCatalog;
-import com.example.proiectcmo.model.CatalogItem;
-import com.example.proiectcmo.model.DetectedSubscription;
-import com.example.proiectcmo.model.Subscription;
-import com.example.proiectcmo.utils.AmountParser;
+import com.example.proiectcmo.importer.ExcerptBuilder;
+import com.example.proiectcmo.importer.GmailQuery;
+import com.example.proiectcmo.model.EmailExcerpt;
+import com.google.android.gms.auth.api.identity.AuthorizationClient;
+import com.google.android.gms.auth.api.identity.AuthorizationRequest;
+import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.google.android.gms.auth.api.identity.ClearTokenRequest;
+import com.google.android.gms.auth.api.identity.Identity;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.tasks.Tasks;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,8 +28,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,132 +37,135 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 public class GmailRepository {
-    public interface Callback {
-        void onResult(List<DetectedSubscription> subscriptions);
+    public static final class ExcerptBatch {
+        public final List<EmailExcerpt> excerpts;
+        public final boolean windowComplete;
+        public final long newestEmailDate;
 
-        void onError(String detail);
+        ExcerptBatch(List<EmailExcerpt> excerpts, boolean windowComplete, long newestEmailDate) {
+            this.excerpts = excerpts;
+            this.windowComplete = windowComplete;
+            this.newestEmailDate = newestEmailDate;
+        }
+    }
+
+    private static final class GmailRateLimitException extends IOException {
+        GmailRateLimitException(int code) {
+            super("HTTP " + code + " rate limit");
+        }
     }
 
     private static final String TAG = "GmailRepository";
+    private static final String GMAIL_READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
     private static final String BASE_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages";
 
-    private static final int MESSAGES_PER_SERVICE = 5;
+    private static final int HTTP_TOO_MANY_REQUESTS = 429;
     private static final int MAX_TEXT_LENGTH = 20000;
-
-    private static final String RECEIPT_WORDS =
-            "(factura OR factură OR chitanta OR chitanță OR plata OR plată OR abonament"
-                    + " OR receipt OR invoice OR payment OR subscription OR renewal)";
-
-    private static final Pattern YEARLY_WORDS = Pattern.compile(
-            "\\b(anual|anuală|annual|yearly|per year|12 luni)\\b", Pattern.CASE_INSENSITIVE);
+    private static final long[] RATE_LIMIT_WAITS_MS = {2_000, 4_000, 8_000, 16_000, 32_000, 32_000};
 
     private static final Pattern STYLE_BLOCK = Pattern.compile(
             "<style[^>]*>.*?</style>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    private final SubscriptionCatalog catalog;
-
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-
     private static final ExecutorService searchPool = Executors.newFixedThreadPool(5);
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    public GmailRepository(SubscriptionCatalog catalog) {
-        this.catalog = catalog;
-    }
-
-    public void findSubscriptions(String accessToken, Callback callback) {
-        executor.execute(() -> {
-            try {
-                List<DetectedSubscription> result = search(accessToken);
-                mainHandler.post(() -> callback.onResult(result));
-            } catch (IOException | JSONException e) {
-                Log.w(TAG, "Citirea Gmail a eșuat", e);
-                mainHandler.post(() -> callback.onError(e.getMessage()));
-            }
-        });
-    }
-
-    private List<DetectedSubscription> search(String token)
-            throws IOException, JSONException {
-        List<Future<DetectedSubscription>> tasks = new ArrayList<>();
-        for (CatalogItem item : catalog.getItems()) {
-            tasks.add(searchPool.submit(() -> searchService(item, token)));
+    public ExcerptBatch fetchExcerpts(String token, long newerThanMillis, int max)
+            throws IOException {
+        List<String> ids = new ArrayList<>();
+        String query = URLEncoder.encode(GmailQuery.build(newerThanMillis), "UTF-8");
+        String pageToken = null;
+        try {
+            do {
+                String url = BASE_URL + "?maxResults=" + Math.min(500, max - ids.size())
+                        + "&q=" + query + (pageToken == null ? "" : "&pageToken=" + pageToken);
+                JSONObject page = new JSONObject(get(url, token));
+                JSONArray messages = page.optJSONArray("messages");
+                for (int i = 0; messages != null && i < messages.length() && ids.size() < max; i++) {
+                    ids.add(messages.getJSONObject(i).getString("id"));
+                }
+                pageToken = page.optString("nextPageToken", null);
+            } while (pageToken != null && !pageToken.isEmpty() && ids.size() < max);
+        } catch (JSONException e) {
+            throw new IOException(e);
         }
 
-        List<DetectedSubscription> result = new ArrayList<>();
-        String lastError = null;
-        for (Future<DetectedSubscription> task : tasks) {
+        List<Future<EmailExcerpt>> tasks = new ArrayList<>();
+        long[] newest = {0L};
+        for (String id : ids) {
+            tasks.add(searchPool.submit(() -> {
+                JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
+                long date = message.optLong("internalDate");
+                if (!GmailQuery.isNewer(date, newerThanMillis)) {
+                    return null;
+                }
+                synchronized (newest) {
+                    newest[0] = Math.max(newest[0], date);
+                }
+                JSONObject payload = message.optJSONObject("payload");
+                StringBuilder body = new StringBuilder();
+                if (payload != null) {
+                    appendBodyText(payload, body);
+                }
+                return ExcerptBuilder.build(id, date,
+                        payload == null ? "" : header(payload, "From"),
+                        payload == null ? "" : header(payload, "Subject"), body.toString());
+            }));
+        }
+
+        List<EmailExcerpt> excerpts = new ArrayList<>();
+        int skipped = 0;
+        for (Future<EmailExcerpt> task : tasks) {
             try {
-                DetectedSubscription detected = task.get();
-                if (detected != null) {
-                    result.add(detected);
+                EmailExcerpt excerpt = task.get();
+                if (excerpt != null) {
+                    excerpts.add(excerpt);
                 }
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause() == null ? e : e.getCause();
-                Log.w(TAG, "Căutarea unui serviciu a eșuat", cause);
-                lastError = String.valueOf(cause.getMessage());
+                if (cause instanceof GmailAuthException) {
+                    cancelAll(tasks);
+                    throw (GmailAuthException) cause;
+                }
+                skipped++;
+                Log.w(TAG, "Un email a fost sărit: " + cause.getClass().getSimpleName()
+                        + (cause.getClass() == IOException.class ? " " + cause.getMessage() : ""));
             } catch (InterruptedException e) {
+                cancelAll(tasks);
                 Thread.currentThread().interrupt();
                 throw new IOException(e);
             }
         }
-        if (result.isEmpty() && lastError != null) {
-            throw new IOException(lastError);
-        }
-        return result;
+        boolean complete = skipped == 0;
+        return new ExcerptBatch(excerpts, complete && ids.size() < max, complete ? newest[0] : 0);
     }
 
-    @Nullable
-    private DetectedSubscription searchService(CatalogItem item, String token)
-            throws IOException, JSONException {
-        String query = "from:(" + String.join(" OR ", item.getEmailDomains()) + ") "
-                + (item.getKeyword().isEmpty() ? "" : "\"" + item.getKeyword() + "\" ")
-                + RECEIPT_WORDS + " newer_than:1y";
-        String listUrl = BASE_URL + "?maxResults=" + MESSAGES_PER_SERVICE
-                + "&q=" + URLEncoder.encode(query, "UTF-8");
-        JSONArray messages = new JSONObject(get(listUrl, token)).optJSONArray("messages");
-        if (messages == null || messages.length() == 0) {
-            return null;
-        }
-
-        for (int i = 0; i < messages.length(); i++) {
-            String id = messages.getJSONObject(i).getString("id");
-            JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
-            String text = readText(message);
-            AmountParser.Result amount;
-            if (item.getKeyword().isEmpty()) {
-                amount = AmountParser.parse(text);
-            } else {
-                if (!text.toLowerCase(Locale.ROOT).contains(item.getKeyword().toLowerCase(Locale.ROOT))) {
-                    continue;
-                }
-                amount = AmountParser.parseNear(text, item.getKeyword());
-                if (amount == null) {
-                    amount = AmountParser.parse(text);
-                }
+    public ExcerptBatch fetchExcerpts(Context context, String token, long newerThanMillis, int max)
+            throws IOException, ExecutionException, InterruptedException {
+        try {
+            return fetchExcerpts(token, newerThanMillis, max);
+        } catch (GmailAuthException e) {
+            if (e.getCode() != HttpURLConnection.HTTP_UNAUTHORIZED) {
+                throw e;
             }
-            if (amount != null) {
-                String cycle = YEARLY_WORDS.matcher(text).find()
-                        ? Subscription.CYCLE_YEARLY : item.getBillingCycle();
-                return new DetectedSubscription(item.getName(), amount.amount, amount.currency,
-                        cycle, item.getCategory(), message.optLong("internalDate"),
-                        item.getCancelUrl());
+            AuthorizationClient client = Identity.getAuthorizationClient(context);
+            Tasks.await(client.clearToken(ClearTokenRequest.builder().setToken(token).build()));
+            AuthorizationResult result = Tasks.await(client.authorize(authorizationRequest()));
+            if (result.hasResolution() || result.getAccessToken() == null) {
+                throw e;
             }
+            return fetchExcerpts(result.getAccessToken(), newerThanMillis, max);
         }
-        return null;
     }
 
-    private static String readText(JSONObject message) {
-        StringBuilder text = new StringBuilder();
-        JSONObject payload = message.optJSONObject("payload");
-        if (payload != null) {
-            text.append(header(payload, "Subject")).append(' ');
+    public static AuthorizationRequest authorizationRequest() {
+        return AuthorizationRequest.builder()
+                .setRequestedScopes(Collections.singletonList(new Scope(GMAIL_READONLY_SCOPE)))
+                .build();
+    }
+
+    private static void cancelAll(List<? extends Future<?>> tasks) {
+        for (Future<?> task : tasks) {
+            task.cancel(true);
         }
-        text.append(message.optString("snippet")).append(' ');
-        if (payload != null) {
-            appendBodyText(payload, text);
-        }
-        return text.toString();
     }
 
     private static String header(JSONObject payload, String name) {
@@ -187,6 +192,7 @@ public class GmailRepository {
                         Base64.decode(data, Base64.URL_SAFE), StandardCharsets.UTF_8);
                 if (mimeType.equals("text/html")) {
                     decoded = STYLE_BLOCK.matcher(decoded).replaceAll(" ");
+                    decoded = decoded.replaceAll("(?i)</(tr|td|th|li|table|div|p|h[1-6])>", "$0<br>");
                     decoded = Html.fromHtml(decoded, Html.FROM_HTML_MODE_COMPACT).toString();
                 }
                 out.append(decoded, 0, Math.min(decoded.length(), MAX_TEXT_LENGTH)).append(' ');
@@ -195,6 +201,11 @@ public class GmailRepository {
             }
         }
         JSONArray parts = part.optJSONArray("parts");
+        JSONObject plain = mimeType.equals("multipart/alternative") ? plainPart(parts) : null;
+        if (plain != null) {
+            appendBodyText(plain, out);
+            return;
+        }
         for (int i = 0; parts != null && i < parts.length(); i++) {
             JSONObject child = parts.optJSONObject(i);
             if (child != null) {
@@ -203,27 +214,74 @@ public class GmailRepository {
         }
     }
 
+    private static JSONObject plainPart(JSONArray parts) {
+        for (int i = 0; parts != null && i < parts.length(); i++) {
+            JSONObject child = parts.optJSONObject(i);
+            JSONObject body = child == null ? null : child.optJSONObject("body");
+            if (child != null && "text/plain".equals(child.optString("mimeType"))
+                    && body != null && !body.optString("data").isEmpty()) {
+                return child;
+            }
+        }
+        return null;
+    }
+
     private static String get(String url, String token) throws IOException {
+        for (long wait : RATE_LIMIT_WAITS_MS) {
+            try {
+                return getOnce(url, token);
+            } catch (GmailRateLimitException e) {
+                try {
+                    Thread.sleep(wait);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException(interrupted);
+                }
+            }
+        }
+        return getOnce(url, token);
+    }
+
+    private static String getOnce(String url, String token) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         try {
             connection.setConnectTimeout(15000);
             connection.setReadTimeout(15000);
             connection.setRequestProperty("Authorization", "Bearer " + token);
             int code = connection.getResponseCode();
+            if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                throw new GmailAuthException(code);
+            }
+            if (code == HttpURLConnection.HTTP_FORBIDDEN) {
+                if (GmailQuery.isRateLimit(readAll(connection.getErrorStream()))) {
+                    throw new GmailRateLimitException(code);
+                }
+                throw new GmailAuthException(code);
+            }
+            if (code == HTTP_TOO_MANY_REQUESTS) {
+                throw new GmailRateLimitException(code);
+            }
             if (code != HttpURLConnection.HTTP_OK) {
                 throw new IOException("HTTP " + code);
             }
-            try (InputStream input = connection.getInputStream()) {
-                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                byte[] chunk = new byte[8192];
-                int read;
-                while ((read = input.read(chunk)) != -1) {
-                    buffer.write(chunk, 0, read);
-                }
-                return buffer.toString(StandardCharsets.UTF_8.name());
-            }
+            return readAll(connection.getInputStream());
         } finally {
             connection.disconnect();
+        }
+    }
+
+    private static String readAll(InputStream stream) throws IOException {
+        if (stream == null) {
+            return "";
+        }
+        try (InputStream input = stream) {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[8192];
+            int read;
+            while ((read = input.read(chunk)) != -1) {
+                buffer.write(chunk, 0, read);
+            }
+            return buffer.toString(StandardCharsets.UTF_8.name());
         }
     }
 }

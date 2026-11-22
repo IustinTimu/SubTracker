@@ -28,6 +28,7 @@
             android:id="@+id/avatarText"
             android:layout_width="@dimen/avatar_size"
             android:layout_height="@dimen/avatar_size"
+            android:layout_marginStart="8dp"
             android:background="@drawable/bg_rounded_square"
             android:fontFamily="sans-serif-medium"
             android:gravity="center"
@@ -51,25 +52,33 @@
                 android:maxLines="1"
                 android:textColor="@color/st_text_primary"
                 android:textSize="16sp"
-                tools:text="Netflix" />
+                tools:text="Apple · Calm" />
 
             <TextView
-                android:id="@+id/metaText"
+                android:id="@+id/detailText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/st_text_primary"
+                android:textSize="14sp"
+                tools:text="49,99 lei / lună · următoarea plată 3 dec." />
+
+            <TextView
+                android:id="@+id/reasonText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:textColor="@color/st_text_secondary"
                 android:textSize="13sp"
-                tools:text="Streaming · ultimul email 3 nov." />
+                tools:text="„preț nou în chitanța din 11 nov.”" />
         </LinearLayout>
-        <TextView
-            android:id="@+id/priceText"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancelButton"
+            style="@style/Widget.SubTracker.Button.Outlined"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:fontFamily="sans-serif-medium"
-            android:textColor="@color/st_text_primary"
-            android:textSize="16sp"
-            tools:text="49,99 lei" />
+            android:text="@string/action_cancel"
+            android:visibility="gone" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

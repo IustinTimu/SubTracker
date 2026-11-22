@@ -17,31 +17,30 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.proiectcmo.R;
+import com.example.proiectcmo.model.ReviewItem;
+import com.example.proiectcmo.repository.GmailRepository;
+import com.example.proiectcmo.utils.CancelLinks;
 import com.example.proiectcmo.utils.UiUtils;
 import com.example.proiectcmo.viewmodel.GmailImportViewModel;
-import com.google.android.gms.auth.api.identity.AuthorizationRequest;
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.Collections;
-
 public class GmailImportActivity extends AppCompatActivity {
+    public static final String EXTRA_OPEN_PENDING = "open_pending";
+
     private static final String TAG = "GmailImportActivity";
 
-    private static final String GMAIL_READONLY_SCOPE =
-            "https://www.googleapis.com/auth/gmail.readonly";
-
     private GmailImportViewModel viewModel;
-    private GmailFoundAdapter adapter;
+    private ImportReviewAdapter adapter;
 
     private View introPanel;
     private View loadingPanel;
     private View resultsPanel;
     private View messagePanel;
-    private Button importButton;
+    private Button applyButton;
+    private View retryButton;
 
     private final ActivityResultLauncher<IntentSenderRequest> consentLauncher =
             registerForActivityResult(
@@ -74,32 +73,55 @@ public class GmailImportActivity extends AppCompatActivity {
         loadingPanel = findViewById(R.id.loadingPanel);
         resultsPanel = findViewById(R.id.resultsPanel);
         messagePanel = findViewById(R.id.messagePanel);
-        importButton = findViewById(R.id.importButton);
+        applyButton = findViewById(R.id.applyButton);
 
-        adapter = new GmailFoundAdapter(() -> viewModel.refreshSelectedCount());
-        RecyclerView list = findViewById(R.id.foundList);
+        adapter = new ImportReviewAdapter(new ImportReviewAdapter.Listener() {
+            @Override
+            public void onSelectionChanged() {
+                viewModel.refreshSelectedCount();
+            }
+
+            @Override
+            public void onCancelClicked(ReviewItem item) {
+                CancelLinks.openOrExplain(GmailImportActivity.this,
+                        item.proposed.getName(), item.cancelUrl);
+            }
+        });
+        RecyclerView list = findViewById(R.id.reviewList);
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);
 
         findViewById(R.id.connectButton).setOnClickListener(v -> requestGmailAccess());
-        findViewById(R.id.retryButton).setOnClickListener(v -> requestGmailAccess());
-        importButton.setOnClickListener(v -> viewModel.importSelected());
+        retryButton = findViewById(R.id.retryButton);
+        retryButton.setOnClickListener(v -> requestGmailAccess());
+        applyButton.setOnClickListener(v -> viewModel.apply());
+        findViewById(R.id.ignoreButton).setOnClickListener(v -> viewModel.ignore());
 
         observeViewModel();
+        if (savedInstanceState == null && getIntent().getBooleanExtra(EXTRA_OPEN_PENDING, false)) {
+            viewModel.openPendingReview();
+        }
     }
 
     private void observeViewModel() {
         viewModel.getStatus().observe(this, this::showPanel);
-        viewModel.getItems().observe(this, adapter::submit);
-        viewModel.getMessage().observe(this,
-                text -> ((TextView) findViewById(R.id.messageText)).setText(text));
-        viewModel.getSelectedCount().observe(this, count -> {
-            importButton.setText(getString(R.string.gmail_import_selected, count));
-            importButton.setEnabled(count > 0);
+        viewModel.getReview().observe(this, review -> adapter.submit(this, review));
+        viewModel.getProgressText().observe(this,
+                text -> ((TextView) findViewById(R.id.progressText)).setText(text));
+        viewModel.getMessage().observe(this, messageRes -> {
+            ((TextView) findViewById(R.id.messageText)).setText(messageRes);
+            retryButton.setVisibility(visibleIf(!isInformational(messageRes)));
         });
-        viewModel.getImported().observe(this, event -> {
-            if (event.getIfNotHandled() != null) {
-                Toast.makeText(this, R.string.gmail_imported, Toast.LENGTH_SHORT).show();
+        viewModel.getSelectedCount().observe(this, count -> {
+            applyButton.setText(getString(R.string.review_apply, count));
+            applyButton.setEnabled(count > 0);
+        });
+        viewModel.getFinished().observe(this, event -> {
+            Integer toastRes = event.getIfNotHandled();
+            if (toastRes != null) {
+                if (toastRes != 0) {
+                    Toast.makeText(this, toastRes, Toast.LENGTH_SHORT).show();
+                }
                 finish();
             }
         });
@@ -114,8 +136,13 @@ public class GmailImportActivity extends AppCompatActivity {
     private void showPanel(GmailImportViewModel.Status status) {
         introPanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.INTRO));
         loadingPanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.LOADING));
-        resultsPanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.RESULTS));
+        resultsPanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.REVIEW));
         messagePanel.setVisibility(visibleIf(status == GmailImportViewModel.Status.MESSAGE));
+    }
+
+    private static boolean isInformational(int messageRes) {
+        return messageRes == R.string.import_nothing_new || messageRes == R.string.import_limit_reached
+                || messageRes == R.string.import_no_pending;
     }
 
     private static int visibleIf(boolean visible) {
@@ -123,11 +150,10 @@ public class GmailImportActivity extends AppCompatActivity {
     }
 
     private void requestGmailAccess() {
-        AuthorizationRequest request = AuthorizationRequest.builder()
-                .setRequestedScopes(Collections.singletonList(new Scope(GMAIL_READONLY_SCOPE)))
-                .build();
-
-        Identity.getAuthorizationClient(this).authorize(request)
+        if (viewModel.getStatus().getValue() == GmailImportViewModel.Status.LOADING) {
+            return;
+        }
+        Identity.getAuthorizationClient(this).authorize(GmailRepository.authorizationRequest())
                 .addOnSuccessListener(result -> {
                     if (result.hasResolution() && result.getPendingIntent() != null) {
                         consentLauncher.launch(new IntentSenderRequest.Builder(
@@ -147,7 +173,7 @@ public class GmailImportActivity extends AppCompatActivity {
         if (token == null) {
             viewModel.onAuthorizationFailed();
         } else {
-            viewModel.scan(token);
+            viewModel.startManualImport(token);
         }
     }
 }

@@ -14,10 +14,14 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <LinearLayout
+        <ScrollView
             android:id="@+id/introPanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fillViewport="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/screen_padding"
             android:paddingBottom="@dimen/screen_padding">
@@ -74,7 +78,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:lineSpacingMultiplier="1.15"
-                        android:text="@string/gmail_privacy"
+                        android:text="@string/import_privacy"
                         android:textColor="@color/st_text_primary"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -93,6 +97,7 @@
                 app:icon="@drawable/ic_mail"
                 app:iconGravity="textStart" />
         </LinearLayout>
+        </ScrollView>
         <LinearLayout
             android:id="@+id/loadingPanel"
             android:layout_width="match_parent"
@@ -106,10 +111,11 @@
                 android:indeterminateTint="@color/st_primary" />
 
             <TextView
+                android:id="@+id/progressText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/gmail_searching"
+                android:text="@string/import_progress_reading"
                 android:textAppearance="@style/TextAppearance.SubTracker.Body" />
         </LinearLayout>
         <LinearLayout
@@ -122,7 +128,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/screen_padding"
-                android:text="@string/gmail_found_title"
+                android:text="@string/review_title"
                 android:textAppearance="@style/TextAppearance.SubTracker.Section" />
 
             <TextView
@@ -130,27 +136,35 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/screen_padding"
                 android:layout_marginTop="4dp"
-                android:text="@string/gmail_found_subtitle"
+                android:text="@string/review_subtitle"
                 android:textAppearance="@style/TextAppearance.SubTracker.Body" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/foundList"
+                android:id="@+id/reviewList"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:clipToPadding="false"
                 android:paddingHorizontal="@dimen/screen_padding"
                 android:paddingVertical="8dp"
-                tools:listitem="@layout/item_gmail_found" />
+                tools:listitem="@layout/item_review" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/importButton"
+                android:id="@+id/applyButton"
                 style="@style/Widget.SubTracker.Button"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/button_height"
                 android:layout_marginHorizontal="@dimen/screen_padding"
+                tools:text="Aplică selecția (5)" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ignoreButton"
+                style="@style/Widget.SubTracker.Button.Text"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginHorizontal="@dimen/screen_padding"
                 android:layout_marginBottom="@dimen/screen_padding"
-                tools:text="Importă selecția (3)" />
+                android:text="@string/review_ignore" />
         </LinearLayout>
         <LinearLayout
             android:id="@+id/messagePanel"
@@ -179,7 +193,7 @@
                 android:layout_marginTop="16dp"
                 android:gravity="center"
                 android:textAppearance="@style/TextAppearance.SubTracker.Body"
-                tools:text="@string/gmail_none_found" />
+                tools:text="@string/import_nothing_new" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/retryButton"
