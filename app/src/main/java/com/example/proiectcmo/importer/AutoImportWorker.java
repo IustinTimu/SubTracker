@@ -95,12 +95,17 @@ public class AutoImportWorker extends Worker {
             markChecked(sync, now, sync.needsReconnect);
             return;
         }
+        sync.needsReconnect = false;
 
         List<Subscription> existing = Tasks.await(subscriptionRepository.fetchAll());
         GmailRepository.ExcerptBatch batch = new GmailRepository()
-                .fetchExcerpts(getApplicationContext(), token, sync.lastScannedEmailDate, MAX_EMAILS);
+                .fetchExcerpts(getApplicationContext(), token, sync.lastScannedEmailDate, MAX_EMAILS,
+                        (read, total) -> { });
         boolean windowComplete = batch.windowComplete && sync.lastScannedEmailDate == 0;
         boolean hasNewEmails = !batch.excerpts.isEmpty();
+        if (hasNewEmails) {
+            SubscriptionAnalyzer.verifyAccess();
+        }
         boolean quota = hasNewEmails
                 && Boolean.TRUE.equals(Tasks.await(stateRepository.tryConsumeAnalysis()));
 

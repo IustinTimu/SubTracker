@@ -129,6 +129,7 @@
     <string name="gmail_intro_text">Căutăm în Gmail chitanțele și facturile din ultimele 400 de zile, iar Google Gemini le analizează ca să găsească abonamentele noi, prețurile schimbate și abonamentele care nu mai sunt active. Tu alegi ce se aplică.</string>
     <string name="import_privacy">Căutăm chitanțele în Gmail pe telefon și trimitem la Google Gemini doar fragmente scurte din ele (expeditor, subiect, sume, date), pentru analiză. Pe varianta gratuită, Google poate folosi aceste fragmente pentru a-și îmbunătăți serviciile și le pot citi evaluatori umani. Emailurile întregi nu pleacă de pe telefon.</string>
     <string name="import_progress_reading">Citesc emailurile…</string>
+    <string name="import_progress_reading_count">Citesc emailurile (%1$d din %2$d)…</string>
     <string name="import_progress_analyzing">Analizez cu Gemini (%1$d din %2$d)…</string>
     <string name="import_progress_saving">Salvez modificările…</string>
     <string name="import_limit_reached">Ai folosit toate cele 5 analize de azi. Încearcă din nou mâine.</string>
@@ -137,6 +138,7 @@
     <string name="import_error_quota">Limita gratuită de analize a fost atinsă, încearcă mai târziu</string>
     <string name="import_error_app_check">Aplicația nu a putut fi verificată de Firebase (App Check), așa că analiza nu a pornit. Încearcă din nou mai târziu.</string>
     <string name="import_error_network">Nu s-a putut contacta Google Gemini. Verifică conexiunea la internet și încearcă din nou.</string>
+    <string name="import_error_busy">Google Gemini e aglomerat acum. Încearcă din nou mai târziu.</string>
     <string name="import_error_invalid">Răspunsul primit de la Google Gemini nu a putut fi citit. Încearcă din nou.</string>
     <string name="import_error_gmail">Emailurile nu au putut fi citite din Gmail. Verifică conexiunea și încearcă din nou.</string>
     <string name="import_error_gmail_auth">Accesul la Gmail a expirat sau a fost retras. Conectează Gmail din nou.</string>

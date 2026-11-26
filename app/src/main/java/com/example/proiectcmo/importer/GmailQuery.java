@@ -7,6 +7,8 @@ public final class GmailQuery {
             "anulat", "anulare", "expired", "expirat", "payment received", "plată"
     };
 
+    private static final String EXCLUDED_CATEGORIES = "-category:promotions -category:social";
+
     private GmailQuery() {
     }
 
@@ -19,7 +21,7 @@ public final class GmailQuery {
             terms.append(keyword.contains(" ") ? "\"" + keyword + "\"" : keyword);
         }
         String window = newerThanMillis <= 0 ? "newer_than:400d" : "after:" + newerThanMillis / 1000;
-        return window + " (" + terms + ")";
+        return window + " " + EXCLUDED_CATEGORIES + " (" + terms + ")";
     }
 
     public static boolean isNewer(long internalDate, long newerThanMillis) {

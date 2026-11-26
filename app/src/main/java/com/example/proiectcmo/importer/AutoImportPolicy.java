@@ -15,6 +15,10 @@ public final class AutoImportPolicy {
         return lastAutoCheck == 0 || now - lastAutoCheck >= DAY_MS;
     }
 
+    public static boolean showReconnect(boolean needsReconnect, long lastScannedEmailDate) {
+        return needsReconnect && lastScannedEmailDate > 0;
+    }
+
     public static Decision decide(boolean hasNewEmails, boolean quotaAvailable) {
         if (!hasNewEmails) {
             return Decision.SKIP_AI;

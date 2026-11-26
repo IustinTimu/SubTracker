@@ -75,7 +75,7 @@ Nu există server propriu. Cheia API Gemini e gestionată de Firebase și protej
 ### 7.1 Pe telefon: căutare și extragere
 
 - **Interogare Gmail** (o singură listă, pe pagini, până la **600** de emailuri, de la cele mai noi):
-  `newer_than:400d (receipt OR chitanță OR chitanta OR factură OR factura OR invoice OR subscription OR abonament OR renew OR renews OR reînnoire OR "trial" OR canceled OR cancelled OR anulat OR anulare OR expired OR expirat OR "payment received" OR "plată")`
+  `newer_than:400d -category:promotions -category:social (receipt OR chitanță OR chitanta OR factură OR factura OR invoice OR subscription OR abonament OR renew OR renews OR reînnoire OR "trial" OR canceled OR cancelled OR anulat OR anulare OR expired OR expirat OR "payment received" OR "plată")`
   Fereastra de 400 de zile acoperă un ciclu anual întreg, plus toleranța.
 - **Fereastră completă:** `windowComplete` e `true` doar dacă limita de 600 de emailuri nu a fost atinsă. Dacă e `false`, promptul îi interzice modelului să întoarcă `LAPSED`, și poate întoarce doar `CANCELED` (email explicit) sau `UNCERTAIN`.
 - **Fragmentul unui email** (construit pe telefon, din care nu pleacă altceva):
@@ -93,7 +93,7 @@ Nu există server propriu. Cheia API Gemini e gestionată de Firebase și protej
   - `com.google.firebase:firebase-appcheck-debug`, doar pentru build-ul de debug;
   - `com.google.guava:guava:31.0.1-android`, pentru `ListenableFuture` din Java.
 - **API-ul Java:** `FirebaseAI.getInstance(GenerativeBackend.googleAI()).generativeModel(MODEL, generationConfig)`, apoi `GenerativeModelFutures.from(...)`, apoi `generateContent(...)` (un `ListenableFuture`). Apelul stă într-o clasă nouă de tip repository, `SubscriptionAnalyzer`, ca restul accesului la date.
-- **Model:** `gemini-3.8-flash` (stabil, gratuit, fără facturare). E o singură constantă, ca să poată fi schimbat pe `gemini-4-hydrogen` sau `gemini-3.5-flash-lite`.
+- **Model:** `gemini-3.5-flash-lite` (gratuit, fără facturare). E o singură constantă, ca să poată fi schimbat ușor.
 - **Ieșire structurată:** `responseMimeType = "application/json"` și un `responseSchema` construit cu `Schema.obj/array/str/numInt/enumeration`. Constructorul verifică semnătura exactă a `Schema.obj` în versiunea SDK-ului.
 - **Intrare (în prompt):**
   - `excerpts[]` (cel mult 150 per apel; un import complet de 600 de emailuri înseamnă până la 4 apeluri, rulate unul după altul, cu rezultatele combinate pe telefon după `matchesExistingId` și nume);
@@ -198,7 +198,7 @@ Categoria vine din catalog dacă numele se potrivește, altfel e `OTHER`. Utiliz
 
 ## 11. Decizii luate de mine (de verificat de autor)
 
-- Modelul `gemini-3.8-flash`, ușor de schimbat.
+- Modelul `gemini-3.5-flash-lite`, ușor de schimbat.
 - Maximum 600 de emailuri per import complet, în apeluri de câte 150; 5 analize pe zi per utilizator (cerute de autor).
 - Propunerile verificării automate se confirmă din banner sau notificare și nu se aplică singure (cerut de autor).
 - Propunerea în așteptare și datele verificării stau în Firestore, sub `users/{uid}/meta/`.

@@ -7,11 +7,16 @@ import org.junit.Test;
 
 public class GmailQueryTest {
     @Test public void fullQueryUses400Days() {
-        assertTrue(GmailQuery.build(0).startsWith("newer_than:400d ("));
+        assertTrue(GmailQuery.build(0).startsWith("newer_than:400d "));
     }
 
     @Test public void incrementalQueryUsesEpochSeconds() {
-        assertTrue(GmailQuery.build(1_700_000_000_000L).startsWith("after:1700000000 ("));
+        assertTrue(GmailQuery.build(1_700_000_000_000L).startsWith("after:1700000000 "));
+    }
+
+    @Test public void bothQueriesSkipPromotionsAndSocial() {
+        assertTrue(GmailQuery.build(0).contains(" -category:promotions -category:social ("));
+        assertTrue(GmailQuery.build(1_700_000_000_000L).contains(" -category:promotions -category:social ("));
     }
 
     @Test public void incrementalDropsAlreadyScannedEmails() {

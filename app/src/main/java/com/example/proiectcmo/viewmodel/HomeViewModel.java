@@ -10,6 +10,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.proiectcmo.R;
+import com.example.proiectcmo.importer.AutoImportPolicy;
 import com.example.proiectcmo.model.ImportReview;
 import com.example.proiectcmo.model.Subscription;
 import com.example.proiectcmo.notifications.PaymentReminderScheduler;
@@ -68,7 +69,8 @@ public class HomeViewModel extends AndroidViewModel {
     public LiveData<Boolean> getNeedsReconnect() { return needsReconnect; }
 
     public void refreshSyncState() {
-        importState.getSync().addOnSuccessListener(sync -> needsReconnect.setValue(sync.needsReconnect));
+        importState.getSync().addOnSuccessListener(sync -> needsReconnect.setValue(
+                AutoImportPolicy.showReconnect(sync.needsReconnect, sync.lastScannedEmailDate)));
     }
 
     public LiveData<SortOrder> getSortOrder() { return sortOrder; }

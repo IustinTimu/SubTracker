@@ -34,6 +34,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 public class GmailRepository {
@@ -61,15 +63,15 @@ public class GmailRepository {
 
     private static final int HTTP_TOO_MANY_REQUESTS = 429;
     private static final int MAX_TEXT_LENGTH = 20000;
-    private static final long[] RATE_LIMIT_WAITS_MS = {2_000, 4_000, 8_000, 16_000, 32_000, 32_000};
+    private static final long[] RATE_LIMIT_WAITS_MS = {2_000, 4_000, 8_000, 16_000, 32_000, 32_000, 32_000, 32_000};
 
     private static final Pattern STYLE_BLOCK = Pattern.compile(
             "<style[^>]*>.*?</style>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private static final ExecutorService searchPool = Executors.newFixedThreadPool(5);
 
-    public ExcerptBatch fetchExcerpts(String token, long newerThanMillis, int max)
-            throws IOException {
+    private ExcerptBatch fetchExcerpts(String token, long newerThanMillis, int max,
+                                       BiConsumer<Integer, Integer> onProgress) throws IOException {
         List<String> ids = new ArrayList<>();
         String query = URLEncoder.encode(GmailQuery.build(newerThanMillis), "UTF-8");
         String pageToken = null;
@@ -90,9 +92,11 @@ public class GmailRepository {
 
         List<Future<EmailExcerpt>> tasks = new ArrayList<>();
         long[] newest = {0L};
+        AtomicInteger read = new AtomicInteger();
         for (String id : ids) {
             tasks.add(searchPool.submit(() -> {
                 JSONObject message = new JSONObject(get(BASE_URL + "/" + id + "?format=full", token));
+                onProgress.accept(read.incrementAndGet(), ids.size());
                 long date = message.optLong("internalDate");
                 if (!GmailQuery.isNewer(date, newerThanMillis)) {
                     return null;
@@ -138,10 +142,11 @@ public class GmailRepository {
         return new ExcerptBatch(excerpts, complete && ids.size() < max, complete ? newest[0] : 0);
     }
 
-    public ExcerptBatch fetchExcerpts(Context context, String token, long newerThanMillis, int max)
+    public ExcerptBatch fetchExcerpts(Context context, String token, long newerThanMillis, int max,
+                                      BiConsumer<Integer, Integer> onProgress)
             throws IOException, ExecutionException, InterruptedException {
         try {
-            return fetchExcerpts(token, newerThanMillis, max);
+            return fetchExcerpts(token, newerThanMillis, max, onProgress);
         } catch (GmailAuthException e) {
             if (e.getCode() != HttpURLConnection.HTTP_UNAUTHORIZED) {
                 throw e;
@@ -152,7 +157,7 @@ public class GmailRepository {
             if (result.hasResolution() || result.getAccessToken() == null) {
                 throw e;
             }
-            return fetchExcerpts(result.getAccessToken(), newerThanMillis, max);
+            return fetchExcerpts(result.getAccessToken(), newerThanMillis, max, onProgress);
         }
     }
 

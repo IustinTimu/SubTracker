@@ -98,9 +98,16 @@ public class GmailImportViewModel extends AndroidViewModel {
     }
 
     private void runImport(String token) throws Exception {
-        List<Subscription> existing = Tasks.await(subscriptionRepository.fetchAll());
         ImportStateRepository.SyncState sync = Tasks.await(stateRepository.getSync());
-        GmailRepository.ExcerptBatch batch = gmailRepository.fetchExcerpts(getApplication(), token, 0, MAX_EMAILS);
+        if (sync.needsReconnect) {
+            sync.needsReconnect = false;
+            Tasks.await(stateRepository.updateSync(sync));
+        }
+        SubscriptionAnalyzer.verifyAccess();
+        List<Subscription> existing = Tasks.await(subscriptionRepository.fetchAll());
+        GmailRepository.ExcerptBatch batch = gmailRepository.fetchExcerpts(getApplication(), token, 0, MAX_EMAILS,
+                (read, total) -> progressText.postValue(getApplication().getString(
+                        R.string.import_progress_reading_count, read, total)));
         if (!batch.excerpts.isEmpty()
                 && !Boolean.TRUE.equals(Tasks.await(stateRepository.tryConsumeAnalysis()))) {
             postMessage(R.string.import_limit_reached);
@@ -245,6 +252,8 @@ public class GmailImportViewModel extends AndroidViewModel {
                 return R.string.import_error_app_check;
             case NETWORK:
                 return R.string.import_error_network;
+            case BUSY:
+                return R.string.import_error_busy;
             default:
                 return R.string.import_error_invalid;
         }

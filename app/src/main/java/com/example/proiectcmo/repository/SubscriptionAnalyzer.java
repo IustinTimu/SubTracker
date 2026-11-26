@@ -9,6 +9,7 @@ import com.example.proiectcmo.importer.ImportReviewBuilder;
 import com.example.proiectcmo.model.AiFinding;
 import com.example.proiectcmo.model.EmailExcerpt;
 import com.example.proiectcmo.model.Subscription;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.ai.FirebaseAI;
 import com.google.firebase.ai.java.GenerativeModelFutures;
 import com.google.firebase.ai.type.Content;
@@ -19,6 +20,7 @@ import com.google.firebase.ai.type.QuotaExceededException;
 import com.google.firebase.ai.type.ResponseStoppedException;
 import com.google.firebase.ai.type.Schema;
 import com.google.firebase.ai.type.ServerException;
+import com.google.firebase.appcheck.FirebaseAppCheck;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -32,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 public class SubscriptionAnalyzer {
-    public static final String GEMINI_MODEL = "gemini-3.8-flash";
+    public static final String GEMINI_MODEL = "gemini-3.5-flash-lite";
     public static final int CHUNK_SIZE = 150;
     private static final String TAG = "SubscriptionAnalyzer";
     private static final long QUOTA_WAIT_MS = 60_000;
@@ -46,6 +48,22 @@ public class SubscriptionAnalyzer {
                 .build();
         model = GenerativeModelFutures.from(FirebaseAI.getInstance(GenerativeBackend.googleAI())
                 .generativeModel(GEMINI_MODEL, config));
+    }
+
+    public static void verifyAccess() throws AnalyzerException {
+        try {
+            Tasks.await(FirebaseAppCheck.getInstance().getAppCheckToken(false));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AnalyzerException(AnalyzerException.Kind.NETWORK, "Întrerupt", e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            boolean offline = cause instanceof IOException || cause.getCause() instanceof IOException;
+            Log.w(TAG, "App Check nu a dat token: " + cause.getClass().getName());
+            throw new AnalyzerException(
+                    offline ? AnalyzerException.Kind.NETWORK : AnalyzerException.Kind.APP_CHECK,
+                    "App Check indisponibil", cause);
+        }
     }
 
     public List<AiFinding> analyze(List<EmailExcerpt> excerpts, List<Subscription> existing,
@@ -104,6 +122,8 @@ public class SubscriptionAnalyzer {
             kind = AnalyzerException.Kind.APP_CHECK;
         } else if (t instanceof IOException || t.getCause() instanceof IOException) {
             kind = AnalyzerException.Kind.NETWORK;
+        } else if (t instanceof ServerException && AnalyzerException.isBusy(msg)) {
+            kind = AnalyzerException.Kind.BUSY;
         } else {
             kind = AnalyzerException.Kind.INVALID_RESPONSE;
         }

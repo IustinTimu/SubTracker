@@ -14,7 +14,7 @@
 
 - Java + XML, MVVM (UI → ViewModel → repository), toate textele vizibile în `res/values/strings.xml`, în română.
 - **Fără comentarii în cod.** Autorul le-a eliminat (commit `3a376ca`); codul nou nu adaugă altele.
-- Model Gemini: constanta `GEMINI_MODEL = "gemini-3.8-flash"`, într-un singur loc.
+- Model Gemini: constanta `GEMINI_MODEL = "gemini-3.5-flash-lite"`, într-un singur loc.
 - Proiectul rămâne pe planul Spark: furnizorul `GenerativeBackend.googleAI()`, fără Vertex AI și fără cont de facturare.
 - Limite: maximum **600** de emailuri per import complet, **150** de fragmente per apel Gemini, **1.200** de caractere per fragment, **5** analize pe zi per utilizator, fereastra Gmail de **400** de zile.
 - Toleranțe pentru „fără plăți recente”: **7** zile la lunar, **30** de zile la anual.
@@ -147,7 +147,7 @@
 - Consumes: `EmailExcerpt` (Task 3); `Subscription.getLastChargeDate()` (Task 2).
 - Produces:
   - `AiFinding` (câmpuri publice): `String name, vendor, currency, billingCycle, matchesExistingId, reason; double price; long lastChargeDate, nextPaymentDate` (0 = lipsă); `Status status`; `List<String> evidenceIds`. `enum Status { ACTIVE, CANCELED, LAPSED, UNCERTAIN }`.
-  - `AnalyzerException extends Exception` cu `enum Kind { QUOTA, APP_CHECK, NETWORK, INVALID_RESPONSE }` și `Kind getKind()`.
+  - `AnalyzerException extends Exception` cu `enum Kind { QUOTA, APP_CHECK, NETWORK, BUSY, INVALID_RESPONSE }` și `Kind getKind()`.
   - `AnalyzerPrompt.build(List<EmailExcerpt> excerpts, List<Subscription> existing, String todayIso, boolean windowComplete) -> String`. Conține regulile din spec 7.2 (plăți unice, perioade de probă, despărțirea chitanțelor Apple/Google Play, toleranțele 7/30, fără prețuri inventate). Când `windowComplete` e `false`, conține textul `Nu folosi statusul LAPSED`. Fragmentele apar ca JSON (`id`, `date` ISO, `from`, `subject`, `text`), iar abonamentele existente ca JSON (`id`, `name`, `price`, `currency`, `billingCycle`, `source`, `cancelled`, `lastChargeDate` ISO).
   - `AiFindingParser.parse(String json) -> List<AiFinding>`. Acceptă `{"subscriptions":[...]}`, transformă datele ISO în milisecunde la miezul nopții local, iar câmpurile lipsă devin 0, null sau listă goală. Pentru JSON invalid aruncă `AnalyzerException(INVALID_RESPONSE)`.
   - `SubscriptionAnalyzer.CHUNK_SIZE = 150`; `SubscriptionAnalyzer.analyze(List<EmailExcerpt>, List<Subscription> existing, boolean windowComplete) -> List<AiFinding>` (blocant). Împarte fragmentele în bucăți de 150 și le trimite pe rând, cu `GenerativeModelFutures` și `GenerationConfig` (`responseMimeType = "application/json"`, `responseSchema` construit cu `Schema.obj/array/str/numDouble/enumeration` după câmpurile `AiFinding`). La o eroare de cotă așteaptă 60 de secunde și reîncearcă o dată, apoi aruncă `QUOTA`. Erorile App Check devin `APP_CHECK`, cele de rețea `NETWORK`. Întoarce lista concatenată, fără deduplicare (aceea se face în Task 5).

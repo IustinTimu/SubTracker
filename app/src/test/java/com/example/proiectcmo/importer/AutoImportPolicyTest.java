@@ -21,6 +21,12 @@ public class AutoImportPolicyTest {
         assertTrue(AutoImportPolicy.shouldRun(now - AutoImportPolicy.DAY_MS, now));
     }
 
+    @Test public void reconnectShowsOnlyAfterGmailWasConnected() {
+        assertFalse(AutoImportPolicy.showReconnect(true, 0));
+        assertFalse(AutoImportPolicy.showReconnect(false, 1_000L));
+        assertTrue(AutoImportPolicy.showReconnect(true, 1_000L));
+    }
+
     @Test public void noNewEmailsSkipsAi() {
         assertEquals(AutoImportPolicy.Decision.SKIP_AI, AutoImportPolicy.decide(false, true));
         assertEquals(AutoImportPolicy.Decision.RUN_AI, AutoImportPolicy.decide(true, true));
